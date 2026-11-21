@@ -1,0 +1,3241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#D95D39" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Pantry2Plate" />
+  <meta name="format-detection" content="telephone=no" />
+  <title>Pantry2Plate — Cook Smart With What You Have</title>
+  <!-- Inline SVG App Icon (Warm Terracotta Plate Logo) -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%23D95D39'/%3E%3Ccircle cx='50' cy='50' r='28' fill='none' stroke='%23FFFFFF' stroke-width='6'/%3E%3Ccircle cx='50' cy='50' r='14' fill='%23FFFFFF'/%3E%3C/svg%3E" />
+  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%23D95D39'/%3E%3Ccircle cx='50' cy='50' r='28' fill='none' stroke='%23FFFFFF' stroke-width='6'/%3E%3Ccircle cx='50' cy='50' r='14' fill='%23FFFFFF'/%3E%3C/svg%3E" />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Tesseract.js & PDF.js for Receipt & Delivery Haul OCR -->
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+  <style>
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #FAF9F6;
+      color: #1C1917;
+      -webkit-tap-highlight-color: transparent;
+      overscroll-behavior-y: none;
+    }
+    button, a, input, select, textarea, label {
+      touch-action: manipulation;
+    }
+    .safe-top {
+      padding-top: max(0.75rem, env(safe-area-inset-top));
+    }
+    .safe-bottom {
+      padding-bottom: max(1rem, env(safe-area-inset-bottom));
+    }
+    @keyframes fadeSlideUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-up {
+      animation: fadeSlideUp 0.2s ease-out forwards;
+    }
+    @keyframes pulseMic {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.08); }
+    }
+    .animate-mic {
+      animation: pulseMic 1.1s infinite ease-in-out;
+    }
+  </style>
+</head>
+<body class="bg-[#FAF9F6] text-stone-900 min-h-screen flex flex-col selection:bg-orange-100 selection:text-orange-950">
+
+  <!-- Top Sticky Header -->
+  <header class="sticky top-0 z-30 bg-[#FAF9F6]/95 backdrop-blur-md border-b border-stone-200/90 safe-top">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-3 flex items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <!-- Classic Terracotta Plate & Fork SVG Logo -->
+        <div class="w-10 h-10 rounded-xl bg-[#D95D39] text-white flex items-center justify-center shadow-sm shrink-0">
+          <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="8" />
+            <circle cx="12" cy="12" r="3.5" />
+            <path d="M3 3v5a2 2 0 0 0 2 2h0a2 2 0 0 0 2-2V3" />
+            <path d="M5 10v11" />
+            <path d="M19 3v18" />
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-lg sm:text-xl font-extrabold tracking-tight text-stone-900">Pantry2Plate</h1>
+          <p class="text-xs text-stone-500 hidden sm:block">Turn the ingredients in your fridge &amp; pantry into delicious meals</p>
+        </div>
+      </div>
+
+      <div class="text-xs font-semibold text-stone-500 hidden md:block">
+        350+ Global Recipes • Direct Video Tutorials • Voice &amp; Delivery Receipt OCR
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Workspace -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-6 space-y-6">
+
+    <!-- Step 1 & Step 2 Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+
+      <!-- Step 1: Kitchen Inventory -->
+      <section class="lg:col-span-7 bg-white rounded-2xl border border-stone-200/90 shadow-xs p-4 sm:p-5 flex flex-col justify-between space-y-4">
+        <div class="space-y-3.5">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <span class="text-[11px] font-bold uppercase tracking-wider text-[#D95D39]">Step 1 · Kitchen Inventory</span>
+              <h2 class="text-base sm:text-lg font-bold text-stone-900">What’s in your Fridge &amp; Pantry?</h2>
+            </div>
+            <button id="clearPantryBtn" type="button" class="px-2.5 py-1.5 rounded-xl text-xs font-semibold text-stone-500 hover:text-rose-600 hover:bg-rose-50 transition" title="Clear kitchen list">
+              Clear All
+            </button>
+          </div>
+
+          <!-- Manual Ingredient Form with Voice Input -->
+          <form id="manualIngredientForm" class="flex flex-col sm:flex-row gap-2">
+            <div class="relative flex-1 flex items-center">
+              <input
+                id="ingredientInput"
+                type="text"
+                placeholder="Type or speak (e.g., Dosa Batter, Paneer, Cauliflower, Eggs)..."
+                class="w-full pl-3.5 pr-12 py-2.5 rounded-xl border border-stone-300 bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#D95D39] text-base sm:text-sm"
+              />
+              <button
+                id="voiceInputBtn"
+                type="button"
+                title="Speak ingredients aloud"
+                aria-label="Speak ingredients aloud"
+                class="absolute right-2 w-9 h-9 rounded-lg bg-orange-50 hover:bg-orange-100 text-[#D95D39] border border-orange-200 flex items-center justify-center transition"
+              >
+                <span id="voiceBtnIcon" class="text-base leading-none">🎤</span>
+              </button>
+            </div>
+            <button type="submit" class="px-4 py-2.5 rounded-xl bg-[#D95D39] hover:bg-[#c24e2c] active:scale-[0.99] text-white font-semibold text-sm shadow-xs transition whitespace-nowrap">
+              + Add Ingredients
+            </button>
+          </form>
+
+          <!-- Voice Listening Status Banner -->
+          <div id="voiceStatusBanner" class="hidden rounded-xl bg-rose-50 border border-rose-200 px-3 py-2 text-xs text-rose-900 flex items-center justify-between gap-2">
+            <span id="voiceStatusText" class="font-semibold">🎙️ Listening... say ingredients (e.g., "Paneer, dosa batter, onions, eggs")</span>
+            <button id="stopVoiceBtn" type="button" class="px-2.5 py-1 rounded-lg bg-rose-600 text-white font-bold text-[11px] shrink-0">Done / Stop</button>
+          </div>
+
+          <!-- Common Staple Items & Delivery/Store Receipt Scanner -->
+          <div class="flex flex-wrap items-center gap-2 pt-0.5">
+            <button id="commonStaplesBtn" type="button" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-amber-50 hover:bg-amber-100 text-amber-950 border border-amber-200 transition">
+              <span>✨</span>
+              <span>Common Staple Items</span>
+            </button>
+
+            <button id="scanReceiptBtn" type="button" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-stone-100 hover:bg-stone-200 text-stone-800 border border-stone-200 transition">
+              <span>🧾</span>
+              <span>Scan Receipt / DoorDash / Instacart</span>
+            </button>
+            <input id="receiptFileInput" type="file" accept="image/*,.pdf" class="hidden" />
+          </div>
+          <p class="text-[11px] text-stone-400">Supports store receipts &amp; mobile screenshots from <strong>DoorDash, Instacart, Amazon &amp; Walmart</strong>.</p>
+
+          <!-- Receipt OCR Status Banner -->
+          <div id="ocrStatusBox" class="hidden rounded-xl bg-orange-50 border border-orange-200 p-3 text-xs text-orange-950 flex items-center justify-between gap-2">
+            <span id="ocrStatusText">Scanning receipt...</span>
+          </div>
+
+          <!-- Kitchen Shelf Items -->
+          <div class="pt-1">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-semibold text-stone-600">Your Kitchen List (<span id="pantryCountBadge">0</span> items)</span>
+              <div class="flex items-center gap-2">
+                <span class="text-[11px] text-stone-400 hidden sm:inline">Portions shown for veggies, eggs &amp; proteins</span>
+                <button id="toggleShelfExpandBtn" type="button" class="hidden px-2.5 py-1 rounded-lg text-[11px] font-bold bg-stone-100 hover:bg-stone-200 text-stone-700 border border-stone-200 transition">
+                  Show All
+                </button>
+              </div>
+            </div>
+            <div id="kitchenShelfList" class="flex flex-wrap gap-2 min-h-[60px] p-3 rounded-xl bg-[#FAF9F6] border border-dashed border-stone-200"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Step 2: Preferences & Filters -->
+      <section class="lg:col-span-5 bg-white rounded-2xl border border-stone-200/90 shadow-xs p-4 sm:p-5 space-y-4">
+        <div>
+          <span class="text-[11px] font-bold uppercase tracking-wider text-[#3A7D5C]">Step 2 · Preferences &amp; Filters</span>
+          <h2 class="text-base sm:text-lg font-bold text-stone-900">Tailor Your Meal Matches</h2>
+        </div>
+
+        <!-- Cuisine Filter -->
+        <div>
+          <label class="block text-xs font-semibold text-stone-600 mb-1.5">Cuisine</label>
+          <div id="cuisineFilterGroup" class="flex flex-wrap gap-1.5"></div>
+          <div id="cuisineAssumedBanner" class="hidden mt-2.5 p-2.5 rounded-xl bg-amber-50/80 border border-amber-200/90 text-xs text-amber-950"></div>
+        </div>
+
+        <!-- Cooking Method / Category Filter -->
+        <div>
+          <label class="block text-xs font-semibold text-stone-600 mb-1.5">Cooking Style &amp; Course</label>
+          <div id="methodFilterGroup" class="flex flex-wrap gap-1.5"></div>
+        </div>
+
+        <!-- Prep Time & Dietary -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-stone-600 mb-1.5">Max Prep Time</label>
+            <div id="timeFilterGroup" class="flex flex-wrap gap-1.5"></div>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-stone-600 mb-1.5">Dietary Mode</label>
+            <div id="dietFilterGroup" class="flex flex-wrap gap-1.5"></div>
+          </div>
+        </div>
+
+        <!-- Matching Toggles -->
+        <div class="pt-2 border-t border-stone-100 space-y-2">
+          <label class="flex items-center justify-between gap-2 cursor-pointer">
+            <span class="text-xs sm:text-sm font-medium text-stone-700">Only show 100% ready recipes</span>
+            <input id="strictMatchToggle" type="checkbox" class="w-4 h-4 rounded accent-[#D95D39]" />
+          </label>
+          <label class="flex items-center justify-between gap-2 cursor-pointer">
+            <span class="text-xs sm:text-sm font-medium text-stone-700">Assume basic cuisine spices &amp; herbs</span>
+            <input id="assumeCuisineSpicesToggle" type="checkbox" checked class="w-4 h-4 rounded accent-[#D95D39]" />
+          </label>
+        </div>
+      </section>
+    </div>
+
+    <!-- Step 3: Recommended Recipes -->
+    <section class="space-y-4">
+      <div class="bg-white rounded-2xl border border-stone-200/90 shadow-xs p-4 sm:p-5 space-y-4">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-[11px] font-bold uppercase tracking-wider text-[#D95D39]">Step 3 · Smart Matches</span>
+              <span id="recipeCountPill" class="px-2 py-0.5 rounded-full text-xs font-bold bg-orange-50 text-[#D95D39] border border-orange-200">0 matches</span>
+            </div>
+            <h2 class="text-lg sm:text-xl font-extrabold text-stone-900">Recommended Recipes</h2>
+          </div>
+
+          <!-- Controls: Serving Size Toggle + Add/Import Recipe -->
+          <div class="flex flex-wrap items-center gap-2.5">
+            <div class="inline-flex items-center bg-stone-100 p-1 rounded-xl border border-stone-200" role="group" aria-label="Serving Size">
+              <span class="text-[11px] font-semibold text-stone-500 px-2">Servings:</span>
+              <button type="button" data-servings="1" class="serving-btn px-2.5 py-1 rounded-lg text-xs font-bold transition">1 Person</button>
+              <button type="button" data-servings="2" class="serving-btn px-2.5 py-1 rounded-lg text-xs font-bold transition">2 People</button>
+              <button type="button" data-servings="4" class="serving-btn px-2.5 py-1 rounded-lg text-xs font-bold transition">4 People</button>
+            </div>
+
+            <button id="openCustomRecipeBtn" type="button" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold bg-[#D95D39] hover:bg-[#c24e2c] text-white shadow-xs transition">
+              <span>➕</span>
+              <span>Add / Import Recipe</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Instant Search & Sort Bar -->
+        <div class="flex flex-col sm:flex-row gap-2.5">
+          <div class="relative flex-1">
+            <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400 text-sm">🔍</span>
+            <input
+              id="recipeSearchInput"
+              type="text"
+              placeholder="Search 350+ global recipes, ingredients, or cuisines (e.g., Dosa, Paneer, Pasta, Tacos)..."
+              class="w-full pl-9 pr-4 py-2.5 rounded-xl border border-stone-200 bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#D95D39] text-base sm:text-sm"
+            />
+          </div>
+          <select id="recipeSortSelect" class="px-3.5 py-2.5 rounded-xl border border-stone-200 bg-stone-50 text-stone-700 font-semibold text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#D95D39]">
+            <option value="best">Sort: Best Kitchen Match</option>
+            <option value="time">Sort: Fastest Prep Time</option>
+            <option value="protein">Sort: Highest Protein (g)</option>
+            <option value="calories">Sort: Lowest Calories (kcal)</option>
+          </select>
+        </div>
+
+        <!-- Recipe Cards Grid -->
+        <div id="recipesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+
+        <!-- Show More (+10 at a time) / Show Top 6 Only -->
+        <div id="expandRecipesWrap" class="hidden pt-2 flex flex-wrap items-center justify-center gap-2.5">
+          <button id="loadMoreRecipesBtn" type="button" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold bg-stone-100 hover:bg-stone-200 text-stone-800 border border-stone-200 transition">
+            Show More Recipes (+10)
+          </button>
+          <button id="resetRecipesLimitBtn" type="button" class="hidden inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold bg-white hover:bg-stone-100 text-stone-600 border border-stone-200 transition">
+            Show Top 6 Only
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Step 4: Personalized Weekly Meal Planner & Interactive Grocery List -->
+    <section class="bg-white rounded-2xl border border-stone-200/90 shadow-xs p-4 sm:p-5 space-y-4">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <div>
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="text-[11px] font-bold uppercase tracking-wider text-[#3A7D5C]">Step 4 · Weekly Schedule</span>
+            <span id="tasteProfileBadge" class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-[#3A7D5C] border border-emerald-200">
+              Taste Profile: Global Variety
+            </span>
+          </div>
+          <h2 class="text-lg sm:text-xl font-extrabold text-stone-900">Weekly Meal Plan (Monday – Sunday)</h2>
+          <p class="text-xs text-stone-500">Tracks ingredient portions across days so items aren’t over-scheduled once used up.</p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+          <button id="autoFillWeekBtn" type="button" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold bg-[#3A7D5C] hover:bg-[#2f664b] text-white shadow-xs transition">
+            <span>✨</span>
+            <span>Auto-Fill Week from Recommended</span>
+          </button>
+          <button id="clearWeekBtn" type="button" class="px-3 py-2 rounded-xl text-xs font-semibold text-stone-600 hover:text-rose-600 hover:bg-rose-50 border border-stone-200 transition">
+            Clear Week
+          </button>
+        </div>
+      </div>
+
+      <!-- 7-Day Grid -->
+      <div id="weeklyPlannerGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-2.5"></div>
+
+      <!-- Interactive Weekly Grocery Shopping List -->
+      <div id="weeklyGroceryBox" class="rounded-xl bg-amber-50/70 border border-amber-200/90 p-3.5 sm:p-4 space-y-2.5">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <h3 class="text-sm font-bold text-amber-950 flex items-center gap-1.5">
+              <span>🛒</span>
+              <span>Weekly Grocery Shopping List</span>
+            </h3>
+            <p class="text-xs text-amber-800/80">Items needed beyond your current kitchen stock for your scheduled week.</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button id="copyGroceryListBtn" type="button" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-white hover:bg-amber-100 text-amber-900 border border-amber-300 transition">
+              📋 Copy List
+            </button>
+            <button id="moveBoughtToKitchenBtn" type="button" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-[#3A7D5C] hover:bg-[#2f664b] text-white shadow-xs transition">
+              🛒 Bought Checked → Add to Kitchen
+            </button>
+          </div>
+        </div>
+        <div id="weeklyGroceryList" class="flex flex-wrap gap-2"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer with Prepared-Dish Savings Counter -->
+  <footer class="bg-white border-t border-stone-200 safe-bottom mt-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-stone-500">
+      <div class="flex items-center gap-2">
+        <span class="font-bold text-stone-800">Pantry2Plate</span>
+        <span>•</span>
+        <span>100% local privacy — your kitchen &amp; meal data stays on your device.</span>
+      </div>
+      <div class="flex items-center gap-2 bg-orange-50 border border-orange-200 px-3 py-1.5 rounded-xl text-stone-900 font-semibold">
+        <span>💰 Estimated Takeout Savings:</span>
+        <span id="estimatedSavingsDisplay" class="text-sm font-extrabold text-[#D95D39]">$0</span>
+        <span id="savingsBreakdownText" class="text-[11px] text-stone-600">(0 servings prepared/planned)</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- MODAL 1: User-Controlled Common Staple Items Picker -->
+  <div id="staplesModal" class="hidden fixed inset-0 z-50 bg-stone-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-white w-full sm:max-w-lg rounded-t-3xl sm:rounded-2xl shadow-2xl border border-stone-200 max-h-[90dvh] flex flex-col animate-fade-up">
+      <div class="p-4 sm:p-5 border-b border-stone-100 flex items-center justify-between">
+        <div>
+          <h3 class="text-lg font-extrabold text-stone-900">✨ Choose Your Common Staple Items</h3>
+          <p class="text-xs text-stone-500">Select only the staples you keep at home—nothing is forced into your list.</p>
+        </div>
+        <button id="closeStaplesModalBtn" type="button" class="w-8 h-8 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-600 font-bold flex items-center justify-center">✕</button>
+      </div>
+
+      <div class="p-4 sm:p-5 overflow-y-auto space-y-4">
+        <div id="staplesCheckboxGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-2"></div>
+
+        <!-- Add Custom Staple Option -->
+        <form id="addCustomStapleForm" class="flex gap-2 pt-2 border-t border-stone-100">
+          <input id="customStapleInput" type="text" placeholder="Add your own staple (e.g., Ghee, Quinoa)..." class="flex-1 px-3 py-2 rounded-xl border border-stone-300 text-base sm:text-sm" />
+          <button type="submit" class="px-3.5 py-2 rounded-xl bg-stone-800 hover:bg-stone-900 text-white text-xs font-bold">+ Add Option</button>
+        </form>
+      </div>
+
+      <div class="p-4 sm:p-5 border-t border-stone-100 bg-stone-50 rounded-b-2xl flex items-center justify-between gap-2">
+        <div class="flex items-center gap-1.5">
+          <button id="selectAllStaplesBtn" type="button" class="px-3 py-2 rounded-xl text-xs font-semibold bg-white border border-stone-200 text-stone-700 hover:bg-stone-100">
+            Select All
+          </button>
+          <button id="clearStapleSelectionBtn" type="button" class="px-3 py-2 rounded-xl text-xs font-semibold text-stone-600 hover:bg-stone-200">
+            Uncheck All
+          </button>
+        </div>
+        <button id="applySelectedStaplesBtn" type="button" class="px-4 py-2.5 rounded-xl bg-[#D95D39] hover:bg-[#c24e2c] text-white text-xs sm:text-sm font-extrabold shadow-xs transition">
+          Add Selected Staples to Kitchen
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 2: Recipe Details, Video Tutorial, Serving Scaler, Cook Mode & Copy/Share -->
+  <div id="recipeModal" class="hidden fixed inset-0 z-50 bg-stone-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div id="recipeModalContent" class="bg-white w-full sm:max-w-2xl rounded-t-3xl sm:rounded-2xl shadow-2xl border border-stone-200 max-h-[92dvh] flex flex-col animate-fade-up"></div>
+  </div>
+
+  <!-- MODAL 3: Add Your Own Recipe or Import from URL -->
+  <div id="customRecipeModal" class="hidden fixed inset-0 z-50 bg-stone-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-white w-full sm:max-w-xl rounded-t-3xl sm:rounded-2xl shadow-2xl border border-stone-200 max-h-[92dvh] flex flex-col animate-fade-up">
+      <div class="p-4 sm:p-5 border-b border-stone-100 flex items-center justify-between">
+        <div>
+          <h3 class="text-lg font-extrabold text-stone-900">➕ Add Your Own Recipe or Import URL</h3>
+          <p class="text-xs text-stone-500">Paste any recipe link to parse ingredients &amp; check your kitchen, or type your own.</p>
+        </div>
+        <button id="closeCustomRecipeBtn" type="button" class="w-8 h-8 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-600 font-bold flex items-center justify-center">✕</button>
+      </div>
+
+      <div class="p-4 sm:p-5 overflow-y-auto space-y-4">
+        <!-- URL Parser Box -->
+        <div class="p-3.5 rounded-xl bg-orange-50/70 border border-orange-200 space-y-2">
+          <label class="block text-xs font-bold text-stone-900">🔗 Import Recipe from Website URL</label>
+          <div class="flex flex-col sm:flex-row gap-2">
+            <input id="recipeUrlInput" type="url" placeholder="https://example.com/masala-dosa-recipe" class="flex-1 px-3 py-2 rounded-xl border border-orange-200 bg-white text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#D95D39]" />
+            <button id="parseUrlBtn" type="button" class="px-4 py-2 rounded-xl bg-[#D95D39] hover:bg-[#c24e2c] text-white text-xs sm:text-sm font-bold whitespace-nowrap">
+              ✨ Parse URL &amp; Check
+            </button>
+          </div>
+          <p id="urlParseStatus" class="hidden text-xs font-medium text-stone-800"></p>
+        </div>
+
+        <!-- Custom Recipe Fields -->
+        <form id="customRecipeForm" class="space-y-3">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-bold text-stone-700 mb-1">Recipe Title *</label>
+              <input id="customTitleInput" type="text" required placeholder="e.g., Crispy Rava Masala Dosa" class="w-full px-3 py-2 rounded-xl border border-stone-300 text-base sm:text-sm" />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-stone-700 mb-1">Cuisine</label>
+              <select id="customCuisineInput" class="w-full px-3 py-2 rounded-xl border border-stone-300 text-base sm:text-sm bg-white">
+                <option value="Indian">Indian</option>
+                <option value="Italian">Italian</option>
+                <option value="Mexican">Mexican</option>
+                <option value="American">American</option>
+                <option value="Chinese">Chinese</option>
+                <option value="Mediterranean">Mediterranean</option>
+                <option value="Thai">Thai</option>
+                <option value="Japanese">Japanese</option>
+                <option value="Korean">Korean</option>
+                <option value="Middle Eastern">Middle Eastern</option>
+              </select>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+              <label class="block text-xs font-bold text-stone-700 mb-1">Prep Time (mins)</label>
+              <input id="customTimeInput" type="number" min="5" max="240" value="20" class="w-full px-3 py-2 rounded-xl border border-stone-300 text-base sm:text-sm" />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-stone-700 mb-1">Cooking Style</label>
+              <select id="customMethodInput" class="w-full px-3 py-2 rounded-xl border border-stone-300 text-base sm:text-sm bg-white">
+                <option value="Stovetop">🍳 Stovetop</option>
+                <option value="Baked">🔥 Baked</option>
+                <option value="Air Fryer">💨 Air Fryer</option>
+                <option value="Dessert">🍰 Dessert</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-stone-700 mb-1">Dietary Mode</label>
+              <select id="customDietInput" class="w-full px-3 py-2 rounded-xl border border-stone-300 text-base sm:text-sm bg-white">
+                <option value="Vegetarian">Vegetarian</option>
+                <option value="Vegan">Vegan</option>
+                <option value="High-Protein">High-Protein</option>
+                <option value="Gluten-Free">Gluten-Free</option>
+                <option value="Pescatarian">Pescatarian</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-stone-700 mb-1">Ingredients (comma-separated) *</label>
+            <input id="customIngredientsInput" type="text" required placeholder="e.g., Dosa Batter, Potato, Onion, Oil" class="w-full px-3 py-2 rounded-xl border border-stone-300 text-base sm:text-sm" />
+            <div id="liveCustomKitchenCheck" class="mt-1.5 text-xs"></div>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-stone-700 mb-1">Optional YouTube Video Tutorial Link</label>
+            <input id="customVideoUrlInput" type="url" placeholder="https://www.youtube.com/watch?v=..." class="w-full px-3 py-2 rounded-xl border border-stone-300 text-base sm:text-sm" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-stone-700 mb-1">Preparation Steps (one per line)</label>
+            <textarea id="customStepsInput" rows="3" placeholder="1. Heat tawa...&#10;2. Spread dosa batter..." class="w-full px-3 py-2 rounded-xl border border-stone-300 text-base sm:text-sm"></textarea>
+          </div>
+          <div class="pt-2 flex items-center justify-end gap-2">
+            <button id="cancelCustomRecipeBtn" type="button" class="px-4 py-2 rounded-xl text-xs font-semibold text-stone-600 hover:bg-stone-100">Cancel</button>
+            <button type="submit" class="px-4 py-2.5 rounded-xl bg-[#D95D39] hover:bg-[#c24e2c] text-white text-xs sm:text-sm font-extrabold shadow-xs">Save Recipe</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Banner -->
+  <div id="toastBanner" class="hidden fixed bottom-5 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-xl bg-stone-900 text-white text-xs sm:text-sm font-semibold shadow-xl max-w-[90vw] text-center animate-fade-up"></div>
+
+  <script>
+    // =========================================================================
+    // 1. CONSTANTS, DIRECT YOUTUBE VIDEOS, SMART SWAPS & ASSUMED PANTRY
+    // =========================================================================
+    const STORAGE_KEY = "pantry2plate_state_v12_2";
+    const DAYS_OF_WEEK = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+
+    const DEFAULT_STAPLE_OPTIONS = [
+      "Oil", "Salt", "Pepper", "Rice", "Bread", "Pasta", "Tortillas", "Roti",
+      "Dosa Batter", "Oats", "Noodles", "Quinoa", "Eggs",
+      "Onion", "Garlic", "Tomato", "Potato", "Butter", "Ghee", "Cheese",
+      "Milk", "Yogurt", "Lentils", "Chickpeas", "Black Beans", "Soy Sauce",
+      "Flour", "Sugar", "Honey", "Cinnamon"
+    ];
+
+    const UNIVERSAL_BASIC_ITEMS = ["water", "ice", "salt", "pepper", "black pepper", "sea salt", "kosher salt"];
+    const MEAT_INGREDIENTS = new Set(["chicken", "beef", "pork", "lamb", "turkey", "bacon", "sausage", "ham"]);
+    const SEAFOOD_INGREDIENTS = new Set(["shrimp", "salmon", "tuna", "fish", "cod", "tilapia", "prawns", "crab"]);
+    const GLUTEN_INGREDIENTS = new Set(["pasta", "bread", "flour", "soy sauce", "noodles", "roti", "rava"]);
+
+    // Verified Direct YouTube Tutorial Video IDs
+    const RECIPE_VIDEO_IDS = {
+      "rec_crispy_masala_dosa": "J75VQSxOtdo",
+      "rec_veg_uttapam": "BiO1SXyRAs4",
+      "rec_egg_dosa": "12ygUCpmvBU",
+      "rec_steamed_idli_sambar_bowl": "awN10O1NZZs",
+      "rec_paneer_dosa_wrap": "W94y7DUx958",
+      "rec_air_fryer_tandoori_paneer": "A6rAbjDsnMU",
+      "rec_air_fryer_aloo_gobi": "ASFMwktvjZs",
+      "rec_air_fryer_garlic_shrimp": "qZowwIVld0c",
+      "rec_air_fryer_crispy_chickpeas": "8dm6hhzUyzY",
+      "rec_baked_feta_tomato_pasta": "LuroDGsJkMA",
+      "rec_baked_salmon_broccoli": "Kcr-l82WvNE",
+      "rec_baked_shakshuka_eggs": "m5Kn9WmOCrw",
+      "rec_baked_loaded_potato": "zUsvk7yLzH0",
+      "rec_dessert_apple_oat_crisp": "mkmCeXb-FNE",
+      "rec_dessert_cardamom_kheer": "x4QofoAjMyE",
+      "rec_dessert_banana_oat_cookies": "3rQ-LrmzG3w",
+      "rec_dessert_baked_cinnamon_toast_bites": "pDM1t6hzSaw",
+      "rec_aloo_gobi_skillet": "SEQgCq3R6ik",
+      "rec_palak_paneer": "a5sr50WL1DY",
+      "rec_chana_masala": "RXZsDHKlVGw",
+      "rec_dal_tadka": "8c_scYUN5uc",
+      "rec_aglio_e_olio": "UmTqq_o6FSI",
+      "rec_black_bean_quesadilla": "1kCGS1fVZ5E",
+      "rec_veggie_fried_rice": "P1Ubo7RRm3g",
+      "rec_med_chickpea_quinoa_bowl": "DCMWiPPnL1Y",
+      "rec_cheesy_spinach_omelette": "0KgwThTF93A"
+    };
+
+    const STYLE_VIDEO_IDS = {
+      "Tawa Pulao": "PxSSGcJdDsY",
+      "Tandoori Skewers": "A6rAbjDsnMU",
+      "Al Forno Casserole": "Y7MxQLScYPE",
+      "Enchilada Bake": "Vq1JLLuor3k",
+      "Crispy Sesame Bites": "ZjEL_bLSRlY",
+      "Garlic Basil Noodles": "PJylXc4RtFE",
+      "Glazed Teriyaki Tray": "RagCOgiVX8g",
+      "Bibimbap Bowl": "Y8CD283Xu6o",
+      "Roasted Herb Bake": "DCMWiPPnL1Y",
+      "Crispy Hash & Protein": "mKS5b3w-1Ws",
+      "Spiced Tray Bake": "m5Kn9WmOCrw",
+      "Rustic Skillet": "UmTqq_o6FSI",
+      "Street Tacos": "1kCGS1fVZ5E",
+      "Wok Stir-Fry": "P1Ubo7RRm3g",
+      "Garlic Herb Pan": "qZowwIVld0c",
+      "Pad Thai Skillet": "PJylXc4RtFE",
+      "Donburi Bowl": "RagCOgiVX8g",
+      "Gochujang Skillet": "Y8CD283Xu6o",
+      "Mezze Skillet": "m5Kn9WmOCrw",
+      "Homestyle Skillet": "0KgwThTF93A",
+      "Sweet Bake": "mkmCeXb-FNE"
+    };
+
+    function getRecipeVideoUrl(recipe) {
+      if (!recipe) return null;
+      if (recipe.videoUrl && /^https?:\/\//i.test(recipe.videoUrl)) return recipe.videoUrl;
+      if (RECIPE_VIDEO_IDS[recipe.id]) {
+        return `https://www.youtube.com/watch?v=${RECIPE_VIDEO_IDS[recipe.id]}`;
+      }
+      for (const [styleKey, vidId] of Object.entries(STYLE_VIDEO_IDS)) {
+        if ((recipe.title || "").includes(styleKey)) {
+          return `https://www.youtube.com/watch?v=${vidId}`;
+        }
+      }
+      const cuisineFallbackIds = {
+        "Indian": "J75VQSxOtdo",
+        "Italian": "UmTqq_o6FSI",
+        "Mexican": "1kCGS1fVZ5E",
+        "Chinese": "P1Ubo7RRm3g",
+        "Mediterranean": "DCMWiPPnL1Y",
+        "Thai": "PJylXc4RtFE",
+        "Japanese": "RagCOgiVX8g",
+        "Korean": "Y8CD283Xu6o",
+        "American": "Kcr-l82WvNE",
+        "Middle Eastern": "m5Kn9WmOCrw"
+      };
+      const fallbackId = cuisineFallbackIds[recipe.cuisine] || "UmTqq_o6FSI";
+      return `https://www.youtube.com/watch?v=${fallbackId}`;
+    }
+
+    const GLOBAL_INGREDIENT_SWAPS = {
+      "Paneer": ["Tofu", "Eggs", "Cheese"],
+      "Tofu": ["Paneer", "Chickpeas", "Chicken"],
+      "Oil": ["Ghee", "Butter"],
+      "Ghee": ["Butter", "Oil"],
+      "Butter": ["Ghee", "Oil"],
+      "Potato": ["Sweet Potato", "Cauliflower", "Paneer"],
+      "Cauliflower": ["Broccoli", "Potato"],
+      "Broccoli": ["Cauliflower", "Spinach"],
+      "Spinach": ["Broccoli", "Bell Pepper"],
+      "Chickpeas": ["Black Beans", "Lentils"],
+      "Black Beans": ["Chickpeas", "Lentils"],
+      "Lentils": ["Chickpeas", "Black Beans"],
+      "Rice": ["Quinoa", "Pasta", "Cauliflower"],
+      "Quinoa": ["Rice", "Pasta"],
+      "Pasta": ["Noodles", "Rice", "Quinoa"],
+      "Noodles": ["Pasta", "Rice"],
+      "Tortillas": ["Roti", "Bread"],
+      "Roti": ["Tortillas", "Bread"],
+      "Salmon": ["Shrimp", "Chicken", "Tofu"],
+      "Shrimp": ["Salmon", "Chicken", "Tofu"],
+      "Chicken": ["Paneer", "Tofu", "Chickpeas"],
+      "Eggs": ["Tofu", "Paneer"],
+      "Yogurt": ["Milk", "Oil"],
+      "Honey": ["Sugar"],
+      "Sugar": ["Honey"],
+      "Apple": ["Banana"],
+      "Banana": ["Apple"]
+    };
+
+    function getSuggestedSwapsForIngredient(ingName, recipe) {
+      const explicit = (recipe?.swaps && recipe.swaps[ingName]) ? recipe.swaps[ingName] : [];
+      const fallback = GLOBAL_INGREDIENT_SWAPS[ingName] || [];
+      return [...new Set([...explicit, ...fallback])];
+    }
+
+    function recipeMatchesDiet(recipe, selectedDiet) {
+      if (!selectedDiet || selectedDiet === "All") return true;
+      const lowerIngs = (recipe.ingredients || []).map(i => i.toLowerCase());
+      const hasMeat = lowerIngs.some(i => MEAT_INGREDIENTS.has(i));
+      const hasSeafood = lowerIngs.some(i => SEAFOOD_INGREDIENTS.has(i));
+      const hasDairyOrEgg = lowerIngs.some(i => ["eggs", "cheese", "paneer", "milk", "yogurt", "butter", "ghee", "cream"].includes(i));
+      const hasGluten = lowerIngs.some(i => GLUTEN_INGREDIENTS.has(i));
+
+      if (selectedDiet === "Pescatarian") {
+        return hasSeafood && !hasMeat;
+      }
+
+      const diets = Array.isArray(recipe.diets) && recipe.diets.length
+        ? recipe.diets
+        : [recipe.diet].filter(Boolean);
+      if (diets.includes(selectedDiet)) return true;
+
+      if (selectedDiet === "Vegetarian") return !hasMeat && !hasSeafood;
+      if (selectedDiet === "Vegan") return !hasMeat && !hasSeafood && !hasDairyOrEgg;
+      if (selectedDiet === "Gluten-Free") return !hasGluten;
+      if (selectedDiet === "High-Protein") return (recipe.protein || 0) >= 15;
+      return false;
+    }
+
+    const CUISINE_ASSUMED_PANTRY = {
+      "Indian": ["Garam Masala", "Cumin (Jeera)", "Turmeric", "Coriander Powder", "Mustard Seeds"],
+      "Italian": ["Dried Oregano", "Dried Basil", "Red Chili Flakes", "Italian Herbs"],
+      "Mexican": ["Ground Cumin", "Chili Powder", "Smoked Paprika", "Dried Oregano"],
+      "Chinese": ["Five-Spice Powder", "White Pepper", "Cornstarch", "Rice Vinegar"],
+      "Mediterranean": ["Dried Oregano", "Thyme", "Lemon Juice", "Smoked Paprika"],
+      "Thai": ["Lime Juice", "Curry Paste", "Crushed Chili Flakes", "Brown Sugar"],
+      "Japanese": ["Rice Vinegar", "Mirin", "Sesame Seeds", "Ginger Powder"],
+      "Korean": ["Gochugaru (Chili Flakes)", "Sesame Seeds", "Rice Vinegar", "Black Pepper"],
+      "American": ["Garlic Powder", "Onion Powder", "Paprika", "Dried Parsley"],
+      "Middle Eastern": ["Ground Cumin", "Cinnamon", "Sumac", "Za'atar"]
+    };
+
+    function getAssumedPantryForCuisine(cuisine) {
+      if (!state.assumeCuisineSpices || !cuisine) return [];
+      return CUISINE_ASSUMED_PANTRY[cuisine] || [];
+    }
+
+    function getAssumedPantryForRecipe(recipe) {
+      if (!state.assumeCuisineSpices || !recipe) return [];
+      if (Array.isArray(recipe.assumedPantry) && recipe.assumedPantry.length > 0) {
+        return recipe.assumedPantry;
+      }
+
+      const title = (recipe.title || "").toLowerCase();
+      const method = (recipe.method || "Stovetop").toLowerCase();
+      const cuisine = recipe.cuisine || "American";
+      const ingsLower = (recipe.ingredients || []).map(i => i.toLowerCase());
+
+      // Strictly match actual desserts only (using word boundaries so "street" never matches "sweet")
+      const isActualDessert = method === "dessert" ||
+        /\b(kheer|crisp|cookies?|toast bites|pudding|tarts?|cakes?|mousse|tiramisu|churros?|mochi|baklava|fritters?|porridge|castella|sticky rice)\b/i.test(title);
+
+      if (isActualDessert) {
+        if (cuisine === "Indian" || /\b(kheer|cardamom)\b/i.test(title)) {
+          return ["Green Cardamom", "Nutmeg", "Pinch of Salt"];
+        }
+        return ["Vanilla Extract", "Baking Powder", "Pinch of Salt"];
+      }
+
+      if (cuisine === "Indian") {
+        if (/\begg dosa\b/i.test(title)) return ["Black Pepper", "Cumin (Jeera)", "Red Chili Powder"];
+        if (/\b(dosa|idli|uttapam)\b/i.test(title)) return ["Mustard Seeds", "Curry Leaves", "Hing (Asafoetida)"];
+        if (/\b(tandoori|tikka)\b/i.test(title)) return ["Kashmiri Chili Powder", "Garam Masala", "Chaat Masala", "Kasuri Methi"];
+        return ["Cumin (Jeera)", "Turmeric", "Coriander Powder", "Garam Masala"];
+      }
+      if (cuisine === "Italian") {
+        if (title.includes("aglio e olio")) return ["Red Chili Flakes", "Dried Parsley", "Black Pepper"];
+        if (method === "baked" || ingsLower.includes("tomato")) return ["Dried Oregano", "Dried Basil", "Red Chili Flakes"];
+        return ["Italian Herbs", "Black Pepper", "Red Chili Flakes"];
+      }
+      if (cuisine === "Mexican") {
+        return ["Ground Cumin", "Chili Powder", "Smoked Paprika"];
+      }
+      if (cuisine === "Chinese") {
+        return title.includes("fried rice") ? ["White Pepper", "Sesame Seeds", "Rice Vinegar"] : ["Cornstarch", "Five-Spice Powder", "White Pepper"];
+      }
+      if (cuisine === "Thai") {
+        return ingsLower.includes("noodles") ? ["Lime Juice", "Crushed Chili Flakes", "Brown Sugar"] : ["Curry Paste", "Lime Juice", "Lemongrass"];
+      }
+      if (cuisine === "Japanese") {
+        return /\b(teriyaki|glazed|salmon)\b/i.test(title) ? ["Mirin", "Rice Vinegar", "Sesame Seeds"] : ["Rice Vinegar", "Sesame Seeds", "Ginger Powder"];
+      }
+      if (cuisine === "Korean") {
+        return ["Gochugaru (Chili Flakes)", "Sesame Seeds", "Rice Vinegar"];
+      }
+      if (cuisine === "Mediterranean") {
+        return ingsLower.includes("shrimp") || ingsLower.includes("salmon")
+          ? ["Lemon Juice", "Dried Oregano", "Black Pepper"]
+          : ["Dried Oregano", "Thyme", "Smoked Paprika"];
+      }
+      if (cuisine === "Middle Eastern") {
+        return title.includes("shakshuka") ? ["Ground Cumin", "Smoked Paprika", "Cayenne"] : ["Za'atar", "Ground Cumin", "Sumac"];
+      }
+      return method === "air fryer" || method === "baked"
+        ? ["Garlic Powder", "Smoked Paprika", "Black Pepper"]
+        : ["Garlic Powder", "Dried Parsley", "Black Pepper"];
+    }
+
+    function isAssumedForRecipe(ingName, recipe) {
+      if (!state.assumeCuisineSpices || !ingName || !recipe) return false;
+      const assumedList = getAssumedPantryForRecipe(recipe);
+      const lower = ingName.trim().toLowerCase();
+      return assumedList.some(a => {
+        const aLow = a.toLowerCase();
+        return aLow === lower || aLow.includes(lower) || lower.includes(aLow.split("(")[0].trim());
+      });
+    }
+
+    const NON_PORTIONED_ITEMS = new Set([
+      "oil", "salt", "pepper", "rice", "lentils", "dal", "oats", "pasta", "noodles", "quinoa",
+      "rava", "flour", "sugar", "dosa batter", "soy sauce", "vinegar", "ketchup", "mayo",
+      "mustard", "hot sauce", "salsa", "curry paste", "honey", "maple syrup", "lemon juice",
+      "milk", "yogurt", "cream", "coconut milk", "broth", "stock", "water",
+      "butter", "ghee", "cheese", "parmesan", "mozzarella", "cheddar", "cinnamon",
+      "garam masala", "cumin", "jeera", "turmeric", "paprika", "oregano", "basil", "chili powder"
+    ]);
+
+    function isPortionedItem(name) {
+      if (!name) return false;
+      const lower = name.trim().toLowerCase();
+      if (NON_PORTIONED_ITEMS.has(lower)) return false;
+      if (/(oil|sauce|vinegar|paste|spice|masala|powder|milk|juice|broth|stock|butter|ghee|cheese|rice|lentil|dal|oat|pasta|noodle|quinoa|batter|salt|pepper|flour|sugar|honey|cinnamon)/i.test(lower)) {
+        return false;
+      }
+      return true;
+    }
+
+    const INGREDIENT_ALIASES = {
+      "olive oil": "Oil", "vegetable oil": "Oil", "canola oil": "Oil", "cooking oil": "Oil",
+      "sea salt": "Salt", "kosher salt": "Salt", "table salt": "Salt",
+      "black pepper": "Pepper", "ground pepper": "Pepper",
+      "basmati rice": "Rice", "white rice": "Rice", "brown rice": "Rice", "jasmine rice": "Rice",
+      "chapati": "Roti", "chapatis": "Roti", "rotis": "Roti", "paratha": "Roti",
+      "idli batter": "Dosa Batter", "uttapam batter": "Dosa Batter",
+      "egg": "Eggs", "onions": "Onion", "red onion": "Onion",
+      "tomatoes": "Tomato", "cherry tomatoes": "Tomato",
+      "potatoes": "Potato", "baby spinach": "Spinach", "palak": "Spinach",
+      "bell peppers": "Bell Pepper", "capsicum": "Bell Pepper",
+      "gobhi": "Cauliflower", "gobi": "Cauliflower",
+      "garbanzo beans": "Chickpeas", "chana": "Chickpeas",
+      "toor dal": "Lentils", "moong dal": "Lentils", "masoor dal": "Lentils", "dal": "Lentils",
+      "curd": "Yogurt", "greek yogurt": "Yogurt", "dahi": "Yogurt",
+      "cottage cheese": "Paneer", "chicken breast": "Chicken",
+      "spaghetti": "Pasta", "penne": "Pasta", "macaroni": "Pasta",
+      "tortilla": "Tortillas", "ramen": "Noodles", "hakka noodles": "Noodles",
+      "rolled oats": "Oats", "semolina": "Rava", "sooji": "Rava",
+      "all-purpose flour": "Flour", "wheat flour": "Flour",
+      "apples": "Apple", "bananas": "Banana", "prawns": "Shrimp", "salmon fillet": "Salmon"
+    };
+
+    const MEASUREMENTS_PER_SERVING = {
+      "Dosa Batter": "3/4 cup", "Rava": "1/2 cup", "Rice": "1/2 cup uncooked",
+      "Pasta": "3 oz (85g)", "Noodles": "3 oz (85g)", "Quinoa": "1/3 cup",
+      "Oats": "1/2 cup", "Bread": "2 slices", "Tortillas": "2 tortillas",
+      "Roti": "2 rotis", "Eggs": "2 large", "Paneer": "4 oz (115g)",
+      "Tofu": "4 oz (115g)", "Chicken": "5 oz (140g)", "Shrimp": "4 oz (115g)",
+      "Salmon": "5 oz (140g)", "Lentils": "1/3 cup dry", "Chickpeas": "1/2 cup cooked",
+      "Black Beans": "1/2 cup cooked", "Potato": "1 medium", "Cauliflower": "1 cup florets",
+      "Spinach": "1.5 cups fresh", "Tomato": "1 medium", "Onion": "1/2 medium",
+      "Garlic": "2 cloves", "Bell Pepper": "1/2 pepper", "Broccoli": "1 cup florets",
+      "Mushroom": "1 cup sliced", "Cheese": "1/3 cup shredded", "Yogurt": "1/3 cup",
+      "Milk": "1/2 cup", "Oil": "1 tbsp", "Butter": "1 tbsp", "Ghee": "1 tsp",
+      "Soy Sauce": "1 tbsp", "Flour": "1/3 cup", "Sugar": "2 tbsp",
+      "Honey": "1 tbsp", "Cinnamon": "1/2 tsp", "Apple": "1 medium", "Banana": "1 medium"
+    };
+
+    function normalizeIngredientName(raw) {
+      if (!raw) return "";
+      let cleaned = String(raw)
+        .replace(/^\d+([\/.]\d+)?\s*(cups?|tbsp|tsp|oz|g|kg|lbs?|ml|l|cloves?|slices?|pieces?|cans?|packets?)\b\s*/i, "")
+        .replace(/\(.*?\)/g, "")
+        .trim();
+      if (!cleaned) return "";
+      const lower = cleaned.toLowerCase();
+      if (INGREDIENT_ALIASES[lower]) return INGREDIENT_ALIASES[lower];
+      return cleaned
+        .split(/\s+/)
+        .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+        .join(" ");
+    }
+
+    function isBasicUniversalItem(name) {
+      if (!name) return false;
+      return UNIVERSAL_BASIC_ITEMS.includes(name.trim().toLowerCase());
+    }
+
+    const CORE_RECIPES = [
+      {
+        id: "rec_crispy_masala_dosa",
+        title: "Crispy Hotel-Style Masala Dosa",
+        cuisine: "Indian",
+        method: "Stovetop",
+        prepTime: 20,
+        diet: "Vegan",
+        diets: ["Vegan", "Vegetarian", "Gluten-Free"],
+        calories: 340,
+        protein: 9,
+        ingredients: ["Dosa Batter", "Potato", "Onion", "Oil"],
+        swaps: { "Potato": ["Sweet Potato", "Paneer"], "Oil": ["Ghee", "Butter"] },
+        steps: [
+          "Boil and lightly mash potatoes; sauté with sliced onions and 1 tsp oil for 4 minutes.",
+          "Heat a flat non-stick tawa or cast-iron skillet over medium-high heat.",
+          "Pour a ladleful of Dosa Batter in the center and swirl outward into a thin crisp circle.",
+          "Drizzle oil around the edges, cook until golden brown, fill with potato masala, fold, and serve hot."
+        ]
+      },
+      {
+        id: "rec_veg_uttapam",
+        title: "Onion Tomato Masala Uttapam",
+        cuisine: "Indian",
+        method: "Stovetop",
+        prepTime: 15,
+        diet: "Vegetarian",
+        diets: ["Vegetarian", "Vegan", "Gluten-Free"],
+        calories: 290,
+        protein: 9,
+        ingredients: ["Dosa Batter", "Onion", "Tomato", "Oil"],
+        swaps: { "Tomato": ["Bell Pepper", "Spinach"], "Oil": ["Ghee", "Butter"] },
+        steps: [
+          "Finely chop onions and tomatoes.",
+          "Pour a thick ladle of Dosa Batter onto a greased hot skillet without spreading too thin.",
+          "Scatter chopped onions and tomatoes over the top and press gently with a spatula.",
+          "Drizzle oil, cover for 2 minutes, flip briefly to crisp the veggies, and serve."
+        ]
+      },
+      {
+        id: "rec_egg_dosa",
+        title: "Street-Style Crispy Egg Dosa",
+        cuisine: "Indian",
+        method: "Stovetop",
+        prepTime: 12,
+        diet: "High-Protein",
+        diets: ["High-Protein", "Vegetarian", "Gluten-Free"],
+        calories: 360,
+        protein: 16,
+        ingredients: ["Dosa Batter", "Eggs", "Onion", "Oil"],
+        swaps: { "Oil": ["Ghee", "Butter"] },
+        steps: [
+          "Spread a thin layer of Dosa Batter on a hot tawa.",
+          "Crack an egg directly over the dosa and spread it evenly with the back of a spoon.",
+          "Sprinkle finely chopped onions, salt, pepper, and a drizzle of oil.",
+          "Cook until the egg sets and the bottom turns crisp, fold in half, and serve."
+        ]
+      },
+      {
+        id: "rec_steamed_idli_sambar_bowl",
+        title: "Soft Steamed Idli & Quick Tadka",
+        cuisine: "Indian",
+        method: "Stovetop",
+        prepTime: 15,
+        diet: "Vegan",
+        diets: ["Vegan", "Vegetarian", "Gluten-Free"],
+        calories: 250,
+        protein: 8,
+        ingredients: ["Dosa Batter", "Oil", "Onion"],
+        swaps: { "Oil": ["Ghee"] },
+        steps: [
+          "Grease idli molds lightly with oil and pour fermented batter into each cavity.",
+          "Steam for 10–12 minutes until a toothpick comes out clean.",
+          "Serve warm with tempered onions or your favorite chutney."
+        ]
+      },
+      {
+        id: "rec_paneer_dosa_wrap",
+        title: "Spiced Paneer Bhurji Dosa Wrap",
+        cuisine: "Indian",
+        method: "Stovetop",
+        prepTime: 18,
+        diet: "High-Protein",
+        diets: ["High-Protein", "Vegetarian", "Gluten-Free"],
+        calories: 420,
+        protein: 21,
+        ingredients: ["Dosa Batter", "Paneer", "Onion", "Tomato", "Oil"],
+        swaps: { "Paneer": ["Tofu", "Eggs"], "Oil": ["Ghee", "Butter"] },
+        steps: [
+          "Crumble paneer and sauté with chopped onions, tomatoes, and oil for 5 minutes.",
+          "Spread Dosa Batter crisp on a hot skillet.",
+          "Spoon warm paneer bhurji down the center, roll tightly, and slice."
+        ]
+      },
+      {
+        id: "rec_air_fryer_tandoori_paneer",
+        title: "Air Fryer Tandoori Paneer & Bell Peppers",
+        cuisine: "Indian",
+        method: "Air Fryer",
+        prepTime: 15,
+        diet: "High-Protein",
+        diets: ["High-Protein", "Vegetarian", "Gluten-Free"],
+        calories: 340,
+        protein: 20,
+        ingredients: ["Paneer", "Bell Pepper", "Onion", "Yogurt", "Oil"],
+        swaps: { "Paneer": ["Tofu", "Chicken"], "Yogurt": ["Oil"] },
+        steps: [
+          "Cut paneer, bell peppers, and onions into 1-inch cubes.",
+          "Toss with yogurt, oil, salt, and Indian spices (garam masala, turmeric, cumin).",
+          "Air fry at 380°F (193°C) for 10–12 minutes, shaking halfway until charred on the edges."
+        ]
+      },
+      {
+        id: "rec_air_fryer_aloo_gobi",
+        title: "Air Fryer Crispy Masala Cauliflower & Potato",
+        cuisine: "Indian",
+        method: "Air Fryer",
+        prepTime: 18,
+        diet: "Vegan",
+        diets: ["Vegan", "Vegetarian", "Gluten-Free"],
+        calories: 265,
+        protein: 6,
+        ingredients: ["Cauliflower", "Potato", "Oil", "Garlic"],
+        swaps: { "Oil": ["Ghee"] },
+        steps: [
+          "Toss cauliflower florets and diced potatoes with oil, minced garlic, salt, and spices.",
+          "Arrange in a single layer in the air fryer basket.",
+          "Air fry at 390°F (200°C) for 14–16 minutes until golden and crispy."
+        ]
+      },
+      {
+        id: "rec_air_fryer_garlic_shrimp",
+        title: "Air Fryer Lemon Garlic Herb Shrimp",
+        cuisine: "Mediterranean",
+        method: "Air Fryer",
+        prepTime: 10,
+        diet: "Pescatarian",
+        diets: ["Pescatarian", "High-Protein", "Gluten-Free"],
+        calories: 270,
+        protein: 28,
+        ingredients: ["Shrimp", "Garlic", "Oil", "Spinach"],
+        swaps: { "Shrimp": ["Salmon", "Tofu"] },
+        steps: [
+          "Toss peeled shrimp with oil, minced garlic, salt, and Mediterranean herbs.",
+          "Air fry at 390°F (200°C) for 6–7 minutes until pink and tender.",
+          "Serve over fresh spinach with a squeeze of lemon."
+        ]
+      },
+      {
+        id: "rec_air_fryer_crispy_chickpeas",
+        title: "Air Fryer Crunchy Spiced Chickpeas",
+        cuisine: "Middle Eastern",
+        method: "Air Fryer",
+        prepTime: 14,
+        diet: "Vegan",
+        diets: ["Vegan", "Vegetarian", "Gluten-Free"],
+        calories: 240,
+        protein: 11,
+        ingredients: ["Chickpeas", "Oil", "Garlic"],
+        swaps: { "Chickpeas": ["Black Beans"] },
+        steps: [
+          "Pat drained chickpeas dry with a towel and toss with oil, garlic, and cumin.",
+          "Air fry at 390°F (200°C) for 12–14 minutes, shaking every 4 minutes until crunchy."
+        ]
+      },
+      {
+        id: "rec_baked_feta_tomato_pasta",
+        title: "Viral Baked Cheese & Cherry Tomato Pasta",
+        cuisine: "Italian",
+        method: "Baked",
+        prepTime: 30,
+        diet: "Vegetarian",
+        diets: ["Vegetarian"],
+        calories: 450,
+        protein: 17,
+        ingredients: ["Pasta", "Tomato", "Cheese", "Garlic", "Oil", "Spinach"],
+        swaps: { "Spinach": ["Broccoli"] },
+        steps: [
+          "Preheat oven to 400°F (205°C). Place tomatoes, garlic cloves, cheese, and oil in a baking dish.",
+          "Bake for 22 minutes until tomatoes burst and cheese is bubbly.",
+          "Mash into a creamy sauce and toss with cooked pasta and fresh spinach."
+        ]
+      },
+      {
+        id: "rec_baked_salmon_broccoli",
+        title: "Sheet-Pan Baked Garlic Salmon & Broccoli",
+        cuisine: "American",
+        method: "Baked",
+        prepTime: 22,
+        diet: "Pescatarian",
+        diets: ["Pescatarian", "High-Protein", "Gluten-Free"],
+        calories: 420,
+        protein: 34,
+        ingredients: ["Salmon", "Broccoli", "Garlic", "Oil"],
+        swaps: { "Salmon": ["Shrimp", "Chicken"], "Broccoli": ["Cauliflower", "Spinach"] },
+        steps: [
+          "Preheat oven to 400°F (205°C) and line a sheet pan.",
+          "Arrange salmon fillets and broccoli florets on the pan; drizzle with oil, garlic, salt, and pepper.",
+          "Bake for 14–16 minutes until salmon flakes easily with a fork."
+        ]
+      },
+      {
+        id: "rec_baked_shakshuka_eggs",
+        title: "Oven-Baked Spiced Tomato & Egg Skillet",
+        cuisine: "Middle Eastern",
+        method: "Baked",
+        prepTime: 22,
+        diet: "Gluten-Free",
+        diets: ["Gluten-Free", "Vegetarian", "High-Protein"],
+        calories: 310,
+        protein: 18,
+        ingredients: ["Eggs", "Tomato", "Onion", "Garlic", "Oil"],
+        swaps: { "Tomato": ["Bell Pepper"] },
+        steps: [
+          "Preheat oven to 375°F (190°C). Simmer chopped tomatoes, onions, and garlic in an oven-safe skillet.",
+          "Make wells in the sauce, crack eggs inside, and bake 8–10 minutes until whites set."
+        ]
+      },
+      {
+        id: "rec_baked_loaded_potato",
+        title: "Crispy Oven-Baked Cheese & Bean Potato",
+        cuisine: "Mexican",
+        method: "Baked",
+        prepTime: 35,
+        diet: "Gluten-Free",
+        diets: ["Gluten-Free", "Vegetarian"],
+        calories: 390,
+        protein: 16,
+        ingredients: ["Potato", "Black Beans", "Cheese", "Tomato", "Oil"],
+        swaps: { "Black Beans": ["Chickpeas"] },
+        steps: [
+          "Rub potatoes with oil and salt; bake at 425°F (220°C) for 30 minutes until tender.",
+          "Split open, fluff with a fork, and top with warm black beans, cheese, and diced tomatoes."
+        ]
+      },
+      {
+        id: "rec_dessert_apple_oat_crisp",
+        title: "Warm Baked Cinnamon Apple Oat Crisp",
+        cuisine: "American",
+        method: "Dessert",
+        prepTime: 25,
+        diet: "Vegetarian",
+        diets: ["Vegetarian", "Gluten-Free"],
+        calories: 295,
+        protein: 5,
+        ingredients: ["Apple", "Oats", "Butter", "Honey", "Cinnamon"],
+        swaps: { "Butter": ["Oil"], "Honey": ["Sugar"], "Apple": ["Banana"] },
+        steps: [
+          "Preheat oven to 375°F (190°C). Slice apples and toss with cinnamon and half the honey.",
+          "Mix rolled oats, melted butter, remaining honey, and cinnamon into a crumbly topping.",
+          "Bake in a small dish for 18–20 minutes until golden and bubbling."
+        ]
+      },
+      {
+        id: "rec_dessert_cardamom_kheer",
+        title: "Creamy Cardamom Rice Kheer Pudding",
+        cuisine: "Indian",
+        method: "Dessert",
+        prepTime: 25,
+        diet: "Gluten-Free",
+        diets: ["Gluten-Free", "Vegetarian"],
+        calories: 280,
+        protein: 7,
+        ingredients: ["Rice", "Milk", "Sugar", "Ghee"],
+        swaps: { "Sugar": ["Honey"], "Ghee": ["Butter"] },
+        steps: [
+          "Lightly toast rinsed rice in 1 tsp ghee in a saucepan for 1 minute.",
+          "Pour in milk and simmer gently on low heat for 18–20 minutes, stirring often until thick and creamy.",
+          "Stir in sugar (and crushed cardamom if on hand) and serve warm or chilled."
+        ]
+      },
+      {
+        id: "rec_dessert_banana_oat_cookies",
+        title: "3-Ingredient Air Fryer Banana Oat Cookies",
+        cuisine: "American",
+        method: "Dessert",
+        prepTime: 12,
+        diet: "Vegan",
+        diets: ["Vegan", "Vegetarian", "Gluten-Free"],
+        calories: 210,
+        protein: 5,
+        ingredients: ["Banana", "Oats", "Cinnamon"],
+        swaps: { "Banana": ["Apple"] },
+        steps: [
+          "Mash ripe banana in a bowl until smooth, then fold in rolled oats and cinnamon.",
+          "Scoop onto parchment paper in the air fryer basket and flatten slightly.",
+          "Air fry at 350°F (175°C) for 8–10 minutes until golden on the edges."
+        ]
+      },
+      {
+        id: "rec_dessert_baked_cinnamon_toast_bites",
+        title: "Caramelized Honey Butter Cinnamon Toast Bites",
+        cuisine: "Italian",
+        method: "Dessert",
+        prepTime: 12,
+        diet: "Vegetarian",
+        diets: ["Vegetarian"],
+        calories: 260,
+        protein: 5,
+        ingredients: ["Bread", "Butter", "Honey", "Cinnamon"],
+        swaps: { "Honey": ["Sugar"] },
+        steps: [
+          "Cut bread slices into bite-sized cubes and toss with melted butter, honey, and cinnamon.",
+          "Bake or air fry at 375°F (190°C) for 7–8 minutes until crisp and caramelized."
+        ]
+      },
+      {
+        id: "rec_aloo_gobi_skillet",
+        title: "Homestyle Aloo Gobi (Cauliflower & Potato)",
+        cuisine: "Indian",
+        method: "Stovetop",
+        prepTime: 25,
+        diet: "Vegan",
+        diets: ["Vegan", "Vegetarian", "Gluten-Free"],
+        calories: 280,
+        protein: 7,
+        ingredients: ["Cauliflower", "Potato", "Onion", "Tomato", "Oil"],
+        swaps: { "Oil": ["Ghee"] },
+        steps: [
+          "Cut cauliflower into bite-sized florets and dice potatoes into small cubes.",
+          "Sauté onions and tomatoes in oil until soft.",
+          "Add cauliflower, potatoes, salt, and spices; cover and cook on medium-low for 15 minutes until tender."
+        ]
+      },
+      {
+        id: "rec_palak_paneer",
+        title: "Creamy Garlic Palak Paneer",
+        cuisine: "Indian",
+        method: "Stovetop",
+        prepTime: 22,
+        diet: "High-Protein",
+        diets: ["High-Protein", "Vegetarian", "Gluten-Free"],
+        calories: 390,
+        protein: 22,
+        ingredients: ["Spinach", "Paneer", "Garlic", "Onion", "Tomato", "Oil"],
+        swaps: { "Paneer": ["Tofu", "Chickpeas"], "Oil": ["Butter", "Ghee"] },
+        steps: [
+          "Blanch fresh spinach in boiling water for 2 minutes, then blend into a smooth green puree.",
+          "Sauté garlic, onion, and tomato in oil until fragrant.",
+          "Stir in spinach puree and cubed paneer; simmer for 5 minutes and serve with rice or roti."
+        ]
+      },
+      {
+        id: "rec_chana_masala",
+        title: "20-Minute Skillet Chana Masala",
+        cuisine: "Indian",
+        method: "Stovetop",
+        prepTime: 20,
+        diet: "Vegan",
+        diets: ["Vegan", "Vegetarian", "Gluten-Free"],
+        calories: 350,
+        protein: 15,
+        ingredients: ["Chickpeas", "Onion", "Tomato", "Garlic", "Oil"],
+        swaps: { "Chickpeas": ["Black Beans", "Lentils"] },
+        steps: [
+          "Sauté diced onion and minced garlic in oil until golden.",
+          "Add chopped tomatoes and simmer into a rich masala base.",
+          "Fold in chickpeas with a splash of water, simmer 8 minutes, and serve over rice or roti."
+        ]
+      },
+      {
+        id: "rec_dal_tadka",
+        title: "Golden Garlic Dal Tadka",
+        cuisine: "Indian",
+        method: "Stovetop",
+        prepTime: 25,
+        diet: "Vegan",
+        diets: ["Vegan", "Vegetarian", "Gluten-Free"],
+        calories: 310,
+        protein: 16,
+        ingredients: ["Lentils", "Onion", "Tomato", "Garlic", "Oil"],
+        swaps: { "Oil": ["Ghee", "Butter"] },
+        steps: [
+          "Simmer rinsed lentils in water with salt until soft and creamy.",
+          "In a small pan, sizzle sliced garlic, onions, and tomatoes in oil.",
+          "Pour the sizzling tadka over the cooked lentils and serve with rice or roti."
+        ]
+      },
+      {
+        id: "rec_aglio_e_olio",
+        title: "Classic Spaghetti Aglio e Olio",
+        cuisine: "Italian",
+        method: "Stovetop",
+        prepTime: 15,
+        diet: "Vegetarian",
+        diets: ["Vegetarian"],
+        calories: 410,
+        protein: 13,
+        ingredients: ["Pasta", "Garlic", "Oil", "Cheese"],
+        swaps: { "Cheese": ["Nutritional Yeast"] },
+        steps: [
+          "Boil pasta in salted water until al dente; reserve 1/2 cup pasta water.",
+          "Gently sizzle thinly sliced garlic in oil until pale gold (do not burn).",
+          "Toss drained pasta, pasta water, and grated cheese together until glossy."
+        ]
+      },
+      {
+        id: "rec_black_bean_quesadilla",
+        title: "Crispy Black Bean & Cheese Quesadilla",
+        cuisine: "Mexican",
+        method: "Stovetop",
+        prepTime: 12,
+        diet: "Vegetarian",
+        diets: ["Vegetarian", "Gluten-Free"],
+        calories: 430,
+        protein: 19,
+        ingredients: ["Tortillas", "Black Beans", "Cheese", "Onion"],
+        swaps: { "Black Beans": ["Chickpeas", "Chicken"] },
+        steps: [
+          "Layer shredded cheese, rinsed black beans, and diced onion over half of a tortilla.",
+          "Fold over and toast in a lightly oiled skillet for 2–3 minutes per side until crisp and melted.",
+          "Slice into wedges and serve warm."
+        ]
+      },
+      {
+        id: "rec_veggie_fried_rice",
+        title: "15-Minute Garlic Egg Fried Rice",
+        cuisine: "Chinese",
+        method: "Stovetop",
+        prepTime: 15,
+        diet: "High-Protein",
+        diets: ["High-Protein", "Vegetarian"],
+        calories: 380,
+        protein: 15,
+        ingredients: ["Rice", "Eggs", "Onion", "Garlic", "Soy Sauce", "Oil"],
+        swaps: { "Rice": ["Quinoa", "Cauliflower"], "Eggs": ["Tofu", "Chicken"] },
+        steps: [
+          "Scramble beaten eggs in a hot oiled wok or skillet and set aside.",
+          "Stir-fry garlic and chopped onions on high heat for 2 minutes.",
+          "Toss in cooked rice, soy sauce, and scrambled eggs; stir-fry 3 minutes until aromatic."
+        ]
+      },
+      {
+        id: "rec_med_chickpea_quinoa_bowl",
+        title: "Mediterranean Chickpea & Quinoa Bowl",
+        cuisine: "Mediterranean",
+        method: "Stovetop",
+        prepTime: 18,
+        diet: "Vegan",
+        diets: ["Vegan", "Vegetarian", "Gluten-Free"],
+        calories: 390,
+        protein: 15,
+        ingredients: ["Quinoa", "Chickpeas", "Tomato", "Spinach", "Oil"],
+        swaps: { "Quinoa": ["Rice", "Pasta"] },
+        steps: [
+          "Fluff cooked quinoa and layer into bowls with fresh spinach.",
+          "Top with warm sautéed chickpeas, diced tomatoes, a drizzle of oil, salt, and pepper."
+        ]
+      },
+      {
+        id: "rec_cheesy_spinach_omelette",
+        title: "Fluffy Spinach & Cheese Folded Omelette",
+        cuisine: "American",
+        method: "Stovetop",
+        prepTime: 10,
+        diet: "High-Protein",
+        diets: ["High-Protein", "Vegetarian", "Gluten-Free"],
+        calories: 330,
+        protein: 22,
+        ingredients: ["Eggs", "Spinach", "Cheese", "Butter"],
+        swaps: { "Butter": ["Oil"], "Spinach": ["Tomato", "Mushroom"] },
+        steps: [
+          "Whisk eggs with a pinch of salt and pepper.",
+          "Melt butter in a non-stick skillet, wilt spinach briefly, and pour eggs over top.",
+          "Sprinkle cheese, fold once set, and serve with toast."
+        ]
+      }
+    ];
+
+    function buildFullRecipeCatalog() {
+      const catalog = [...CORE_RECIPES];
+      const templates = [
+        { cuisine: "Indian", method: "Stovetop", base: "Rice", proteins: ["Paneer", "Chickpeas", "Lentils", "Eggs", "Chicken"], veggies: ["Spinach", "Cauliflower", "Potato", "Tomato", "Bell Pepper"], style: "Tawa Pulao", time: 20, diet: "Vegetarian", cals: 370, prot: 15 },
+        { cuisine: "Indian", method: "Air Fryer", base: "Cauliflower", proteins: ["Paneer", "Chickpeas", "Tofu", "Chicken", "Shrimp"], veggies: ["Bell Pepper", "Onion", "Potato", "Spinach"], style: "Tandoori Skewers", time: 15, diet: "High-Protein", cals: 320, prot: 19 },
+        { cuisine: "Italian", method: "Baked", base: "Pasta", proteins: ["Cheese", "Chickpeas", "Chicken", "Salmon", "Lentils"], veggies: ["Spinach", "Tomato", "Broccoli", "Mushroom"], style: "Al Forno Casserole", time: 28, diet: "Vegetarian", cals: 420, prot: 18 },
+        { cuisine: "Italian", method: "Stovetop", base: "Rice", proteins: ["Cheese", "Shrimp", "Chicken", "Chickpeas", "Mushroom"], veggies: ["Spinach", "Tomato", "Garlic", "Onion"], style: "Rustic Skillet", time: 22, diet: "Vegetarian", cals: 390, prot: 16 },
+        { cuisine: "Italian", method: "Air Fryer", base: "Potato", proteins: ["Cheese", "Chicken", "Salmon", "Tofu", "Chickpeas"], veggies: ["Broccoli", "Tomato", "Bell Pepper", "Spinach"], style: "Crispy Herb Bake", time: 16, diet: "Gluten-Free", cals: 340, prot: 20 },
+        { cuisine: "Mexican", method: "Baked", base: "Tortillas", proteins: ["Black Beans", "Cheese", "Chicken", "Eggs", "Potato"], veggies: ["Onion", "Tomato", "Bell Pepper", "Spinach"], style: "Enchilada Bake", time: 25, diet: "Gluten-Free", cals: 390, prot: 17 },
+        { cuisine: "Mexican", method: "Stovetop", base: "Rice", proteins: ["Black Beans", "Shrimp", "Chicken", "Tofu", "Eggs"], veggies: ["Bell Pepper", "Tomato", "Onion", "Spinach"], style: "Street Tacos", time: 18, diet: "Gluten-Free", cals: 375, prot: 19 },
+        { cuisine: "Mexican", method: "Air Fryer", base: "Potato", proteins: ["Black Beans", "Shrimp", "Chicken", "Cheese", "Chickpeas"], veggies: ["Bell Pepper", "Onion", "Tomato", "Cauliflower"], style: "Crispy Fajita Bowl", time: 15, diet: "Gluten-Free", cals: 335, prot: 20 },
+        { cuisine: "Chinese", method: "Air Fryer", base: "Broccoli", proteins: ["Tofu", "Chicken", "Shrimp", "Eggs", "Chickpeas"], veggies: ["Bell Pepper", "Mushroom", "Onion", "Garlic"], style: "Crispy Sesame Bites", time: 14, diet: "Gluten-Free", cals: 310, prot: 20 },
+        { cuisine: "Chinese", method: "Stovetop", base: "Noodles", proteins: ["Tofu", "Chicken", "Shrimp", "Eggs", "Mushroom"], veggies: ["Broccoli", "Bell Pepper", "Onion", "Spinach"], style: "Wok Stir-Fry", time: 16, diet: "High-Protein", cals: 385, prot: 19 },
+        { cuisine: "Chinese", method: "Baked", base: "Rice", proteins: ["Tofu", "Salmon", "Chicken", "Eggs", "Chickpeas"], veggies: ["Broccoli", "Mushroom", "Bell Pepper", "Onion"], style: "Ginger Soy Bake", time: 24, diet: "Gluten-Free", cals: 360, prot: 21 },
+        { cuisine: "Thai", method: "Stovetop", base: "Noodles", proteins: ["Tofu", "Chicken", "Shrimp", "Eggs", "Chickpeas"], veggies: ["Bell Pepper", "Spinach", "Broccoli", "Onion"], style: "Garlic Basil Noodles", time: 16, diet: "Pescatarian", cals: 385, prot: 17 },
+        { cuisine: "Thai", method: "Air Fryer", base: "Cauliflower", proteins: ["Tofu", "Shrimp", "Chicken", "Chickpeas", "Salmon"], veggies: ["Bell Pepper", "Broccoli", "Onion", "Spinach"], style: "Crispy Chili Bites", time: 15, diet: "Gluten-Free", cals: 315, prot: 21 },
+        { cuisine: "Thai", method: "Baked", base: "Rice", proteins: ["Tofu", "Salmon", "Shrimp", "Chicken", "Lentils"], veggies: ["Spinach", "Bell Pepper", "Broccoli", "Tomato"], style: "Coconut Curry Bake", time: 25, diet: "Gluten-Free", cals: 390, prot: 20 },
+        { cuisine: "Japanese", method: "Air Fryer", base: "Salmon", proteins: ["Tofu", "Eggs", "Shrimp", "Chicken", "Mushroom"], veggies: ["Broccoli", "Spinach", "Onion", "Bell Pepper"], style: "Glazed Teriyaki Tray", time: 15, diet: "Pescatarian", cals: 360, prot: 24 },
+        { cuisine: "Japanese", method: "Stovetop", base: "Rice", proteins: ["Salmon", "Tofu", "Eggs", "Chicken", "Shrimp"], veggies: ["Spinach", "Mushroom", "Broccoli", "Onion"], style: "Donburi Bowl", time: 18, diet: "High-Protein", cals: 380, prot: 22 },
+        { cuisine: "Japanese", method: "Baked", base: "Potato", proteins: ["Salmon", "Tofu", "Chicken", "Eggs", "Shrimp"], veggies: ["Broccoli", "Mushroom", "Spinach", "Onion"], style: "Miso Glazed Bake", time: 24, diet: "Gluten-Free", cals: 365, prot: 22 },
+        { cuisine: "Korean", method: "Stovetop", base: "Rice", proteins: ["Eggs", "Tofu", "Chicken", "Mushroom", "Shrimp"], veggies: ["Spinach", "Onion", "Garlic", "Bell Pepper"], style: "Bibimbap Bowl", time: 18, diet: "Gluten-Free", cals: 390, prot: 18 },
+        { cuisine: "Korean", method: "Air Fryer", base: "Cauliflower", proteins: ["Tofu", "Chicken", "Shrimp", "Eggs", "Chickpeas"], veggies: ["Broccoli", "Bell Pepper", "Onion", "Mushroom"], style: "Gochujang Crispy Tray", time: 15, diet: "High-Protein", cals: 325, prot: 20 },
+        { cuisine: "Korean", method: "Baked", base: "Potato", proteins: ["Tofu", "Salmon", "Chicken", "Cheese", "Eggs"], veggies: ["Spinach", "Mushroom", "Onion", "Broccoli"], style: "Scallion Sesame Bake", time: 25, diet: "Gluten-Free", cals: 370, prot: 20 },
+        { cuisine: "Mediterranean", method: "Baked", base: "Quinoa", proteins: ["Chickpeas", "Salmon", "Cheese", "Lentils", "Shrimp"], veggies: ["Tomato", "Spinach", "Bell Pepper", "Onion"], style: "Roasted Herb Bake", time: 25, diet: "Gluten-Free", cals: 380, prot: 19 },
+        { cuisine: "Mediterranean", method: "Stovetop", base: "Pasta", proteins: ["Shrimp", "Chickpeas", "Cheese", "Salmon", "Lentils"], veggies: ["Spinach", "Tomato", "Garlic", "Bell Pepper"], style: "Garlic Herb Pan", time: 18, diet: "Pescatarian", cals: 395, prot: 20 },
+        { cuisine: "Mediterranean", method: "Air Fryer", base: "Potato", proteins: ["Salmon", "Shrimp", "Chickpeas", "Cheese", "Tofu"], veggies: ["Broccoli", "Tomato", "Bell Pepper", "Onion"], style: "Lemon Oregano Tray", time: 15, diet: "Gluten-Free", cals: 340, prot: 21 },
+        { cuisine: "American", method: "Air Fryer", base: "Potato", proteins: ["Eggs", "Cheese", "Chicken", "Salmon", "Black Beans"], veggies: ["Broccoli", "Spinach", "Onion", "Mushroom"], style: "Crispy Hash & Protein", time: 16, diet: "Gluten-Free", cals: 350, prot: 21 },
+        { cuisine: "American", method: "Stovetop", base: "Rice", proteins: ["Chicken", "Salmon", "Eggs", "Black Beans", "Shrimp"], veggies: ["Broccoli", "Spinach", "Bell Pepper", "Mushroom"], style: "Homestyle Skillet", time: 20, diet: "Gluten-Free", cals: 380, prot: 23 },
+        { cuisine: "Middle Eastern", method: "Baked", base: "Chickpeas", proteins: ["Lentils", "Eggs", "Paneer", "Chicken", "Salmon"], veggies: ["Tomato", "Onion", "Cauliflower", "Spinach"], style: "Spiced Tray Bake", time: 25, diet: "Gluten-Free", cals: 360, prot: 17 },
+        { cuisine: "Middle Eastern", method: "Stovetop", base: "Quinoa", proteins: ["Chickpeas", "Lentils", "Shrimp", "Chicken", "Paneer"], veggies: ["Spinach", "Tomato", "Onion", "Bell Pepper"], style: "Mezze Skillet", time: 18, diet: "Gluten-Free", cals: 365, prot: 18 },
+        { cuisine: "Middle Eastern", method: "Air Fryer", base: "Cauliflower", proteins: ["Chickpeas", "Salmon", "Chicken", "Paneer", "Tofu"], veggies: ["Bell Pepper", "Onion", "Tomato", "Potato"], style: "Za'atar Crispy Bites", time: 15, diet: "Gluten-Free", cals: 320, prot: 19 }
+      ];
+
+      const globalDesserts = [
+        { cuisine: "Italian", title: "Warm Baked Cinnamon Apple & Honey Ricotta Tart", ingredients: ["Apple", "Bread", "Butter", "Honey", "Cinnamon"], diets: ["Vegetarian"], cals: 285, prot: 6 },
+        { cuisine: "Italian", title: "Creamy Vanilla Oat & Honey Panna Pudding", ingredients: ["Milk", "Oats", "Honey", "Cinnamon"], diets: ["Vegetarian", "Gluten-Free"], cals: 245, prot: 6 },
+        { cuisine: "Mexican", title: "Air Fryer Cinnamon Sugar Tortilla Churro Bites", ingredients: ["Tortillas", "Butter", "Sugar", "Cinnamon"], diets: ["Vegetarian", "Gluten-Free"], cals: 250, prot: 4 },
+        { cuisine: "Mexican", title: "Warm Sweet Banana & Honey Rice Pudding", ingredients: ["Rice", "Milk", "Banana", "Honey", "Cinnamon"], diets: ["Vegetarian", "Gluten-Free"], cals: 270, prot: 6 },
+        { cuisine: "Chinese", title: "Crispy Air Fryer Honey Sesame Banana Fritters", ingredients: ["Banana", "Flour", "Honey", "Oil"], diets: ["Vegan", "Vegetarian"], cals: 260, prot: 4 },
+        { cuisine: "Chinese", title: "Warm Sweet Ginger & Honey Rice Porridge", ingredients: ["Rice", "Milk", "Honey", "Apple"], diets: ["Vegetarian", "Gluten-Free"], cals: 240, prot: 5 },
+        { cuisine: "Mediterranean", title: "Baked Honey Yogurt & Cinnamon Apple Bake", ingredients: ["Apple", "Yogurt", "Honey", "Oats", "Cinnamon"], diets: ["Vegetarian", "Gluten-Free"], cals: 255, prot: 8 },
+        { cuisine: "Mediterranean", title: "Sweet Olive Oil & Honey Toast Crisps", ingredients: ["Bread", "Oil", "Honey", "Cinnamon"], diets: ["Vegan", "Vegetarian"], cals: 235, prot: 4 },
+        { cuisine: "Thai", title: "Warm Sweet Coconut Milk & Banana Sticky Rice", ingredients: ["Rice", "Milk", "Banana", "Sugar"], diets: ["Vegetarian", "Gluten-Free"], cals: 295, prot: 5 },
+        { cuisine: "Japanese", title: "Fluffy Baked Honey & Milk Castella Toast", ingredients: ["Bread", "Eggs", "Milk", "Honey"], diets: ["Vegetarian"], cals: 275, prot: 9 },
+        { cuisine: "Korean", title: "Crispy Sweet Honey Butter Cinnamon Bread", ingredients: ["Bread", "Butter", "Honey", "Sugar", "Cinnamon"], diets: ["Vegetarian"], cals: 280, prot: 5 },
+        { cuisine: "Middle Eastern", title: "Warm Honey Butter & Cinnamon Oat Baklava Bake", ingredients: ["Oats", "Butter", "Honey", "Cinnamon"], diets: ["Vegetarian", "Gluten-Free"], cals: 270, prot: 5 }
+      ];
+
+      globalDesserts.forEach((d, idx) => {
+        catalog.push({
+          id: `dessert_global_${idx + 1}`,
+          title: d.title,
+          cuisine: d.cuisine,
+          method: "Dessert",
+          prepTime: 15,
+          diet: d.diets[0],
+          diets: d.diets,
+          calories: d.cals,
+          protein: d.prot,
+          ingredients: d.ingredients,
+          swaps: { "Butter": ["Oil"], "Honey": ["Sugar"], "Apple": ["Banana"] },
+          steps: [
+            `Combine ${d.ingredients.join(", ").toLowerCase()} in a mixing bowl or baking dish.`,
+            `Bake or air fry at 365°F (185°C) for 10–14 minutes until golden, fragrant, and tender.`
+          ]
+        });
+      });
+
+      let counter = 1;
+      templates.forEach(tpl => {
+        tpl.proteins.forEach((prot, pIdx) => {
+          tpl.veggies.forEach((veg, vIdx) => {
+            if (prot === veg || tpl.base === prot || tpl.base === veg) return;
+            const ings = [tpl.base, prot, veg, "Garlic", "Oil"];
+            const lowerIngs = ings.map(i => i.toLowerCase());
+            const hasMeat = lowerIngs.some(i => MEAT_INGREDIENTS.has(i));
+            const hasSeafood = lowerIngs.some(i => SEAFOOD_INGREDIENTS.has(i));
+            const hasGluten = lowerIngs.some(i => GLUTEN_INGREDIENTS.has(i));
+            const isVegan = !hasMeat && !hasSeafood && !["Cheese", "Paneer", "Eggs"].includes(prot);
+            const isHighProt = ["Chicken", "Shrimp", "Salmon", "Eggs", "Paneer", "Tofu", "Lentils", "Chickpeas", "Black Beans"].includes(prot);
+
+            const diets = [];
+            if (isVegan) diets.push("Vegan");
+            if (!hasMeat && !hasSeafood) diets.push("Vegetarian");
+            if (hasSeafood && !hasMeat) diets.push("Pescatarian");
+            if (!hasGluten) diets.push("Gluten-Free");
+            if (isHighProt) diets.push("High-Protein");
+
+            const primaryDiet = diets[0] || tpl.diet;
+            const stepText = tpl.method === "Air Fryer"
+              ? [
+                  `Toss ${tpl.base.toLowerCase()}, ${prot.toLowerCase()}, and ${veg.toLowerCase()} with minced garlic, oil, and salt.`,
+                  `Air fry at 385°F (195°C) for ${tpl.time - 3} minutes, shaking halfway until golden and crisp.`
+                ]
+              : tpl.method === "Baked"
+              ? [
+                  `Preheat oven to 400°F (205°C). Combine ${tpl.base.toLowerCase()}, ${prot.toLowerCase()}, and ${veg.toLowerCase()} in an oiled baking dish with garlic.`,
+                  `Bake for ${tpl.time - 5} minutes until bubbling and tender.`
+                ]
+              : [
+                  `Prepare ${tpl.base} according to basic stovetop instructions.`,
+                  `Sauté minced garlic, ${veg.toLowerCase()}, and ${prot.toLowerCase()} in oil, then toss together with ${tpl.base.toLowerCase()}.`
+                ];
+
+            catalog.push({
+              id: `gen_rec_${counter++}`,
+              title: `${tpl.method !== "Stovetop" ? tpl.method + " " : ""}${tpl.cuisine} ${prot} & ${veg} ${tpl.style}`,
+              cuisine: tpl.cuisine,
+              method: tpl.method,
+              prepTime: tpl.time + ((pIdx + vIdx) % 5),
+              diet: primaryDiet,
+              diets,
+              calories: tpl.cals + ((pIdx * 12) - (vIdx * 5)),
+              protein: tpl.prot + (isHighProt ? 5 : 0),
+              ingredients: ings,
+              swaps: {
+                [tpl.base]: ["Rice", "Pasta", "Quinoa", "Potato", "Tortillas"].filter(x => x !== tpl.base).slice(0, 2),
+                [prot]: ["Chickpeas", "Tofu", "Eggs", "Paneer"].filter(x => x !== prot).slice(0, 2)
+              },
+              steps: stepText
+            });
+          });
+        });
+      });
+
+      return catalog;
+    }
+
+    const ALL_BASE_RECIPES = buildFullRecipeCatalog();
+
+    // =========================================================================
+    // 2. APPLICATION STATE & LOCALSTORAGE PERSISTENCE
+    // =========================================================================
+    let state = {
+      pantry: [],
+      stapleOptions: [...DEFAULT_STAPLE_OPTIONS],
+      selectedStaples: [],
+      customRecipes: [],
+      selectedCuisine: "All",
+      selectedMethod: "All",
+      selectedTime: "All",
+      selectedDiet: "All",
+      strictMatch: false,
+      assumeCuisineSpices: true,
+      servings: 2,
+      searchQuery: "",
+      sortBy: "best",
+      visibleRecipeLimit: 6,
+      showAllShelf: false,
+      weeklyPlan: {},
+      cookedHistory: [],
+      cuisineAffinity: {},
+      checkedGroceryItems: []
+    };
+
+    let activeWakeLock = null;
+    let cookModeEnabled = false;
+    let checkedCookSteps = new Set();
+
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch (e) {
+        console.warn("Could not save state to localStorage:", e);
+      }
+    }
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem("pantry2plate_state_v12_1");
+        if (!raw) return;
+        const parsed = JSON.parse(raw);
+        state = {
+          ...state,
+          ...parsed,
+          selectedMethod: parsed.selectedMethod || "All",
+          assumeCuisineSpices: typeof parsed.assumeCuisineSpices === "boolean" ? parsed.assumeCuisineSpices : true,
+          visibleRecipeLimit: typeof parsed.visibleRecipeLimit === "number" && parsed.visibleRecipeLimit >= 6 ? parsed.visibleRecipeLimit : 6,
+          pantry: Array.isArray(parsed.pantry) ? parsed.pantry : [],
+          stapleOptions: Array.isArray(parsed.stapleOptions) && parsed.stapleOptions.length ? parsed.stapleOptions : [...DEFAULT_STAPLE_OPTIONS],
+          selectedStaples: Array.isArray(parsed.selectedStaples) ? parsed.selectedStaples : [],
+          customRecipes: Array.isArray(parsed.customRecipes) ? parsed.customRecipes : [],
+          weeklyPlan: parsed.weeklyPlan && typeof parsed.weeklyPlan === "object" ? parsed.weeklyPlan : {},
+          cookedHistory: Array.isArray(parsed.cookedHistory) ? parsed.cookedHistory : [],
+          cuisineAffinity: parsed.cuisineAffinity && typeof parsed.cuisineAffinity === "object" ? parsed.cuisineAffinity : {},
+          checkedGroceryItems: Array.isArray(parsed.checkedGroceryItems) ? parsed.checkedGroceryItems : []
+        };
+      } catch (e) {
+        console.warn("Could not load state:", e);
+      }
+    }
+
+    function getAllRecipes() {
+      return [...state.customRecipes, ...ALL_BASE_RECIPES];
+    }
+
+    function getRecipeById(id) {
+      return getAllRecipes().find(r => r.id === id) || null;
+    }
+
+    function trackCuisineAffinity(cuisine, weight = 1) {
+      if (!cuisine || cuisine === "All") return;
+      state.cuisineAffinity[cuisine] = (state.cuisineAffinity[cuisine] || 0) + weight;
+    }
+
+    // =========================================================================
+    // 3. RECIPE MATCHING & SMART SWAP EVALUATION ENGINE
+    // =========================================================================
+    function evaluateRecipe(recipe) {
+      const pantryMap = new Map();
+      state.pantry.forEach(item => {
+        pantryMap.set(item.name.toLowerCase(), item);
+      });
+
+      const reqIngredients = (recipe.ingredients || [])
+        .map(normalizeIngredientName)
+        .filter(ing => ing && !isBasicUniversalItem(ing) && !isAssumedForRecipe(ing, recipe));
+
+      const uniqueReqs = [...new Set(reqIngredients)];
+      const assumedPantry = getAssumedPantryForRecipe(recipe);
+
+      if (uniqueReqs.length === 0) {
+        return {
+          recipe,
+          matchPct: 100,
+          matchedCount: 0,
+          totalCount: 0,
+          missing: [],
+          swapsUsed: [],
+          suggestedSwaps: [],
+          ingredientBreakdown: [],
+          assumedPantry,
+          isReady: true
+        };
+      }
+
+      let matchedCount = 0;
+      const missing = [];
+      const swapsUsed = [];
+      const suggestedSwaps = [];
+      const ingredientBreakdown = [];
+
+      uniqueReqs.forEach(ing => {
+        const directItem = pantryMap.get(ing.toLowerCase());
+        const possibleSwaps = getSuggestedSwapsForIngredient(ing, recipe);
+
+        if (directItem && (!isPortionedItem(directItem.name) || directItem.portions > 0)) {
+          matchedCount++;
+          ingredientBreakdown.push({
+            name: ing,
+            status: "have",
+            swapUsed: null,
+            possibleSwaps
+          });
+          return;
+        }
+
+        let foundSwap = null;
+        for (const sw of possibleSwaps) {
+          const swItem = pantryMap.get(sw.toLowerCase());
+          if (swItem && (!isPortionedItem(swItem.name) || swItem.portions > 0)) {
+            foundSwap = swItem;
+            break;
+          }
+        }
+
+        if (foundSwap) {
+          matchedCount++;
+          swapsUsed.push({ original: ing, substitute: foundSwap.name });
+          ingredientBreakdown.push({
+            name: ing,
+            status: "swap",
+            swapUsed: foundSwap.name,
+            possibleSwaps
+          });
+        } else {
+          missing.push(ing);
+          if (possibleSwaps.length > 0) {
+            suggestedSwaps.push({ missing: ing, alternatives: possibleSwaps });
+          }
+          ingredientBreakdown.push({
+            name: ing,
+            status: "missing",
+            swapUsed: null,
+            possibleSwaps
+          });
+        }
+      });
+
+      const matchPct = Math.round((matchedCount / uniqueReqs.length) * 100);
+      return {
+        recipe,
+        matchPct,
+        matchedCount,
+        totalCount: uniqueReqs.length,
+        missing,
+        swapsUsed,
+        suggestedSwaps,
+        ingredientBreakdown,
+        assumedPantry,
+        isReady: missing.length === 0
+      };
+    }
+
+    function formatScaledAmount(ingName, servings) {
+      const base = MEASUREMENTS_PER_SERVING[ingName];
+      if (!base) return `${servings} portion${servings > 1 ? "s" : ""}`;
+      return `${base} × ${servings}`;
+    }
+
+    // =========================================================================
+    // 4. KITCHEN INVENTORY & USER-CONTROLLED COMMON STAPLES MODAL
+    // =========================================================================
+    function addIngredientsToKitchen(namesArray, defaultPortions = 4) {
+      let addedCount = 0;
+      namesArray.forEach(raw => {
+        const clean = normalizeIngredientName(raw);
+        if (!clean) return;
+        const tracked = isPortionedItem(clean);
+        const existing = state.pantry.find(p => p.name.toLowerCase() === clean.toLowerCase());
+        if (existing) {
+          if (tracked) existing.portions = (existing.portions || 0) + defaultPortions;
+        } else {
+          state.pantry.unshift({
+            name: clean,
+            portions: tracked ? defaultPortions : null
+          });
+        }
+        addedCount++;
+      });
+      saveState();
+      renderAll();
+      return addedCount;
+    }
+
+    function openStaplesModal() {
+      const modal = document.getElementById("staplesModal");
+      if (!modal) return;
+      renderStaplesChecklist();
+      modal.classList.remove("hidden");
+    }
+
+    function closeStaplesModal() {
+      document.getElementById("staplesModal")?.classList.add("hidden");
+    }
+
+    function renderStaplesChecklist() {
+      const grid = document.getElementById("staplesCheckboxGrid");
+      if (!grid) return;
+
+      grid.innerHTML = state.stapleOptions.map(opt => {
+        const isChecked = state.selectedStaples.includes(opt);
+        return `
+          <label class="flex items-center gap-2 px-3 py-2 rounded-xl border cursor-pointer transition text-xs font-semibold ${isChecked ? "bg-orange-50 border-[#D95D39] text-stone-900" : "bg-stone-50 border-stone-200 text-stone-700 hover:bg-stone-100"}">
+            <input type="checkbox" value="${opt}" ${isChecked ? "checked" : ""} class="staple-opt-checkbox w-4 h-4 rounded accent-[#D95D39]" />
+            <span class="truncate">${opt}</span>
+          </label>
+        `;
+      }).join("");
+
+      grid.querySelectorAll(".staple-opt-checkbox").forEach(cb => {
+        cb.addEventListener("change", () => {
+          const val = cb.value;
+          if (cb.checked) {
+            if (!state.selectedStaples.includes(val)) state.selectedStaples.push(val);
+          } else {
+            state.selectedStaples = state.selectedStaples.filter(s => s !== val);
+          }
+          saveState();
+          renderStaplesChecklist();
+        });
+      });
+    }
+
+    // =========================================================================
+    // 5. RENDERING FUNCTIONS (SHELF, FILTERS, RECIPES WITHOUT THUMBNAILS)
+    // =========================================================================
+    function renderShelf() {
+      const container = document.getElementById("kitchenShelfList");
+      const countBadge = document.getElementById("pantryCountBadge");
+      const toggleBtn = document.getElementById("toggleShelfExpandBtn");
+      if (!container) return;
+
+      if (countBadge) countBadge.textContent = state.pantry.length;
+
+      if (state.pantry.length === 0) {
+        toggleBtn?.classList.add("hidden");
+        container.innerHTML = `<p class="text-xs text-stone-400 py-2">Your kitchen list is empty. Type or speak ingredients above, pick your <strong>Common Staple Items</strong>, or scan a receipt / delivery haul.</p>`;
+        return;
+      }
+
+      const COLLAPSE_LIMIT = 8;
+      if (state.pantry.length > COLLAPSE_LIMIT && toggleBtn) {
+        toggleBtn.classList.remove("hidden");
+        toggleBtn.textContent = state.showAllShelf
+          ? "Collapse List"
+          : `Show All (${state.pantry.length})`;
+      } else {
+        toggleBtn?.classList.add("hidden");
+      }
+
+      const visibleItems = state.showAllShelf ? state.pantry : state.pantry.slice(0, COLLAPSE_LIMIT);
+
+      container.innerHTML = visibleItems.map((item, idx) => {
+        const tracked = isPortionedItem(item.name);
+        if (!tracked) {
+          return `
+            <div class="inline-flex items-center gap-1.5 pl-3 pr-1.5 py-1.5 rounded-xl border bg-white border-stone-200 text-stone-800 text-xs font-semibold shadow-2xs">
+              <span>${item.name}</span>
+              <button type="button" data-action="del" data-idx="${idx}" class="w-5 h-5 rounded-md text-stone-400 hover:text-rose-600 hover:bg-rose-50 font-bold leading-none" title="Remove item">✕</button>
+            </div>
+          `;
+        }
+        const portions = item.portions ?? 4;
+        return `
+          <div class="inline-flex items-center gap-1.5 pl-3 pr-1.5 py-1.5 rounded-xl border bg-white border-stone-200 text-stone-800 text-xs font-semibold shadow-2xs">
+            <span>${item.name}</span>
+            <span class="px-1.5 py-0.5 rounded-md text-[10px] font-bold ${portions <= 2 ? "bg-rose-100 text-rose-700" : "bg-stone-100 text-stone-600"}">
+              ${portions}x
+            </span>
+            <button type="button" data-action="dec" data-idx="${idx}" class="w-5 h-5 rounded-md bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold leading-none" title="Decrease portions">−</button>
+            <button type="button" data-action="inc" data-idx="${idx}" class="w-5 h-5 rounded-md bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold leading-none" title="Increase portions">+</button>
+            <button type="button" data-action="del" data-idx="${idx}" class="w-5 h-5 rounded-md text-stone-400 hover:text-rose-600 hover:bg-rose-50 font-bold leading-none" title="Remove item">✕</button>
+          </div>
+        `;
+      }).join("");
+
+      container.querySelectorAll("button[data-action]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const idx = Number(btn.dataset.idx);
+          const action = btn.dataset.action;
+          const item = state.pantry[idx];
+          if (!item) return;
+
+          if (action === "inc") {
+            item.portions = (item.portions ?? 4) + 1;
+          } else if (action === "dec") {
+            item.portions = (item.portions ?? 4) - 1;
+            if (item.portions <= 0) state.pantry.splice(idx, 1);
+          } else if (action === "del") {
+            state.pantry.splice(idx, 1);
+          }
+          saveState();
+          renderAll();
+        });
+      });
+    }
+
+    function renderFilters() {
+      const cuisines = ["All", "Indian", "Italian", "Mexican", "American", "Chinese", "Mediterranean", "Thai", "Japanese", "Korean", "Middle Eastern"];
+      const methods = [
+        { label: "All", val: "All" },
+        { label: "🍳 Stovetop", val: "Stovetop" },
+        { label: "🔥 Baked", val: "Baked" },
+        { label: "💨 Air Fryer", val: "Air Fryer" },
+        { label: "🍰 Dessert", val: "Dessert" }
+      ];
+      const times = [
+        { label: "Any", val: "All" },
+        { label: "≤ 15m", val: "15" },
+        { label: "≤ 25m", val: "25" }
+      ];
+      const diets = ["All", "Vegetarian", "Vegan", "High-Protein", "Gluten-Free", "Pescatarian"];
+
+      const cuisineBox = document.getElementById("cuisineFilterGroup");
+      const assumedBanner = document.getElementById("cuisineAssumedBanner");
+      if (cuisineBox) {
+        cuisineBox.innerHTML = cuisines.map(c => `
+          <button type="button" data-cuisine="${c}" class="px-2.5 py-1.5 rounded-xl text-xs font-semibold border transition ${state.selectedCuisine === c ? "bg-[#D95D39] text-white border-[#D95D39] shadow-2xs" : "bg-[#FAF9F6] text-stone-700 border-stone-200 hover:bg-stone-100"}">
+            ${c}
+          </button>
+        `).join("");
+        cuisineBox.querySelectorAll("button").forEach(btn => {
+          btn.addEventListener("click", () => {
+            state.selectedCuisine = btn.dataset.cuisine;
+            state.visibleRecipeLimit = 6;
+            if (state.selectedCuisine !== "All") trackCuisineAffinity(state.selectedCuisine, 1);
+            saveState();
+            renderAll();
+          });
+        });
+      }
+
+      const methodBox = document.getElementById("methodFilterGroup");
+      if (methodBox) {
+        methodBox.innerHTML = methods.map(m => `
+          <button type="button" data-method="${m.val}" class="px-2.5 py-1.5 rounded-xl text-xs font-semibold border transition ${state.selectedMethod === m.val ? "bg-[#D95D39] text-white border-[#D95D39] shadow-2xs" : "bg-[#FAF9F6] text-stone-700 border-stone-200 hover:bg-stone-100"}">
+            ${m.label}
+          </button>
+        `).join("");
+        methodBox.querySelectorAll("button").forEach(btn => {
+          btn.addEventListener("click", () => {
+            state.selectedMethod = btn.dataset.method;
+            state.visibleRecipeLimit = 6;
+            saveState();
+            renderAll();
+          });
+        });
+      }
+
+      if (assumedBanner) {
+        if (state.selectedCuisine !== "All" && state.assumeCuisineSpices) {
+          const assumedItems = getAssumedPantryForCuisine(state.selectedCuisine);
+          if (assumedItems.length > 0) {
+            assumedBanner.classList.remove("hidden");
+            assumedBanner.innerHTML = `
+              <span class="font-bold text-amber-950">🌿 Assumed ${state.selectedCuisine} Pantry:</span>
+              <span class="text-amber-900">${assumedItems.join(", ")}</span>
+            `;
+          } else {
+            assumedBanner.classList.add("hidden");
+          }
+        } else {
+          assumedBanner.classList.add("hidden");
+        }
+      }
+
+      const timeBox = document.getElementById("timeFilterGroup");
+      if (timeBox) {
+        timeBox.innerHTML = times.map(t => `
+          <button type="button" data-time="${t.val}" class="px-2.5 py-1.5 rounded-xl text-xs font-semibold border transition ${state.selectedTime === t.val ? "bg-[#3A7D5C] text-white border-[#3A7D5C]" : "bg-[#FAF9F6] text-stone-700 border-stone-200 hover:bg-stone-100"}">
+            ${t.label}
+          </button>
+        `).join("");
+        timeBox.querySelectorAll("button").forEach(btn => {
+          btn.addEventListener("click", () => {
+            state.selectedTime = btn.dataset.time;
+            state.visibleRecipeLimit = 6;
+            saveState();
+            renderAll();
+          });
+        });
+      }
+
+      const dietBox = document.getElementById("dietFilterGroup");
+      if (dietBox) {
+        dietBox.innerHTML = diets.map(d => `
+          <button type="button" data-diet="${d}" class="px-2.5 py-1.5 rounded-xl text-xs font-semibold border transition ${state.selectedDiet === d ? "bg-[#3A7D5C] text-white border-[#3A7D5C]" : "bg-[#FAF9F6] text-stone-700 border-stone-200 hover:bg-stone-100"}">
+            ${d}
+          </button>
+        `).join("");
+        dietBox.querySelectorAll("button").forEach(btn => {
+          btn.addEventListener("click", () => {
+            state.selectedDiet = btn.dataset.diet;
+            state.visibleRecipeLimit = 6;
+            saveState();
+            renderAll();
+          });
+        });
+      }
+
+      document.querySelectorAll(".serving-btn").forEach(btn => {
+        const s = Number(btn.dataset.servings);
+        if (s === state.servings) {
+          btn.classList.add("bg-white", "text-[#D95D39]", "shadow-2xs");
+          btn.classList.remove("text-stone-600");
+        } else {
+          btn.classList.remove("bg-white", "text-[#D95D39]", "shadow-2xs");
+          btn.classList.add("text-stone-600");
+        }
+      });
+
+      const strictToggle = document.getElementById("strictMatchToggle");
+      if (strictToggle) strictToggle.checked = Boolean(state.strictMatch);
+
+      const assumeSpicesToggle = document.getElementById("assumeCuisineSpicesToggle");
+      if (assumeSpicesToggle) assumeSpicesToggle.checked = Boolean(state.assumeCuisineSpices);
+    }
+
+    function getFilteredEvaluatedRecipes() {
+      const q = state.searchQuery.trim().toLowerCase();
+      let list = getAllRecipes().map(evaluateRecipe);
+
+      list = list.filter(ev => {
+        const r = ev.recipe;
+        const rMethod = r.method || "Stovetop";
+        if (state.selectedCuisine !== "All" && r.cuisine !== state.selectedCuisine) return false;
+        if (state.selectedMethod !== "All" && rMethod !== state.selectedMethod) return false;
+        if (state.selectedTime !== "All" && r.prepTime > Number(state.selectedTime)) return false;
+        if (!recipeMatchesDiet(r, state.selectedDiet)) return false;
+        if (state.strictMatch && !ev.isReady) return false;
+        if (q) {
+          const hay = `${r.title} ${r.cuisine} ${rMethod} ${r.diet} ${(r.diets || []).join(" ")} ${(r.ingredients || []).join(" ")}`.toLowerCase();
+          if (!hay.includes(q)) return false;
+        }
+        return true;
+      });
+
+      list.sort((a, b) => {
+        if (state.sortBy === "time") return a.recipe.prepTime - b.recipe.prepTime;
+        if (state.sortBy === "protein") return (b.recipe.protein || 0) - (a.recipe.protein || 0);
+        if (state.sortBy === "calories") return (a.recipe.calories || 0) - (b.recipe.calories || 0);
+        if (b.matchPct !== a.matchPct) return b.matchPct - a.matchPct;
+        return a.recipe.prepTime - b.recipe.prepTime;
+      });
+
+      return list;
+    }
+
+    function renderRecipes() {
+      const grid = document.getElementById("recipesGrid");
+      const countPill = document.getElementById("recipeCountPill");
+      const expandWrap = document.getElementById("expandRecipesWrap");
+      const loadMoreBtn = document.getElementById("loadMoreRecipesBtn");
+      const resetLimitBtn = document.getElementById("resetRecipesLimitBtn");
+      if (!grid) return;
+
+      const evaluated = getFilteredEvaluatedRecipes();
+      if (countPill) countPill.textContent = `${evaluated.length} match${evaluated.length === 1 ? "" : "es"}`;
+
+      if (evaluated.length === 0) {
+        grid.innerHTML = `
+          <div class="col-span-full text-center py-10 px-4 rounded-2xl bg-[#FAF9F6] border border-dashed border-stone-200">
+            <p class="text-sm font-bold text-stone-700">No matching recipes found for your current filters.</p>
+            <p class="text-xs text-stone-500 mt-1">Try adding more ingredients, turning off "Only show 100% ready recipes", or clearing filters.</p>
+          </div>
+        `;
+        expandWrap?.classList.add("hidden");
+        return;
+      }
+
+      const currentLimit = Math.min(state.visibleRecipeLimit || 6, evaluated.length);
+      const visible = evaluated.slice(0, currentLimit);
+      const remaining = evaluated.length - currentLimit;
+
+      if (evaluated.length > 6 && expandWrap) {
+        expandWrap.classList.remove("hidden");
+        if (remaining > 0 && loadMoreBtn) {
+          const nextBatch = Math.min(10, remaining);
+          loadMoreBtn.classList.remove("hidden");
+          loadMoreBtn.textContent = `Show More Recipes (+${nextBatch} of ${remaining} remaining)`;
+        } else {
+          loadMoreBtn?.classList.add("hidden");
+        }
+        if (currentLimit > 6 && resetLimitBtn) {
+          resetLimitBtn.classList.remove("hidden");
+        } else {
+          resetLimitBtn?.classList.add("hidden");
+        }
+      } else {
+        expandWrap?.classList.add("hidden");
+      }
+
+      const scale = state.servings;
+
+      grid.innerHTML = visible.map(ev => {
+        const r = ev.recipe;
+        const rMethod = r.method || "Stovetop";
+        const methodIcon = rMethod === "Baked" ? "🔥" : rMethod === "Air Fryer" ? "💨" : rMethod === "Dessert" ? "🍰" : "🍳";
+        const scaledCals = Math.round((r.calories || 320) * scale);
+        const scaledProtein = Math.round((r.protein || 12) * scale);
+        const videoUrl = getRecipeVideoUrl(r);
+
+        const ingPills = ev.ingredientBreakdown.map(item => {
+          if (item.status === "have") {
+            return `<span class="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-emerald-50 text-[#3A7D5C] border border-emerald-200">✓ ${item.name}</span>`;
+          }
+          if (item.status === "swap") {
+            return `<span class="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-amber-50 text-amber-800 border border-amber-200">⇄ ${item.name} (${item.swapUsed})</span>`;
+          }
+          const swapHint = item.possibleSwaps && item.possibleSwaps.length > 0
+            ? ` <span class="text-[10px] text-amber-700 font-semibold">· ⇄ ${item.possibleSwaps.slice(0, 2).join(" / ")}</span>`
+            : "";
+          return `<span class="px-2 py-0.5 rounded-md text-[11px] font-medium bg-stone-100 text-stone-700 border border-stone-200">+ ${item.name}${swapHint}</span>`;
+        }).join("");
+
+        return `
+          <article class="rounded-2xl border ${ev.isReady ? "border-emerald-300 bg-white" : "border-stone-200 bg-white"} p-4 flex flex-col justify-between gap-3.5 shadow-2xs hover:shadow-md transition">
+            <div class="space-y-2.5">
+              <div class="flex items-start justify-between gap-2">
+                <div class="flex flex-wrap items-center gap-1.5">
+                  <span class="px-2 py-0.5 rounded-lg text-[11px] font-bold bg-stone-100 text-stone-700">${r.cuisine}</span>
+                  <span class="px-2 py-0.5 rounded-lg text-[11px] font-semibold bg-orange-50 text-[#D95D39]">${methodIcon} ${rMethod}</span>
+                  <span class="px-2 py-0.5 rounded-lg text-[11px] font-semibold bg-stone-100 text-stone-600">⏱ ${r.prepTime}m</span>
+                </div>
+                <span class="px-2.5 py-0.5 rounded-full text-xs font-extrabold ${ev.isReady ? "bg-emerald-100 text-[#3A7D5C]" : "bg-orange-100 text-[#D95D39]"}">
+                  ${ev.matchPct}% Ready
+                </span>
+              </div>
+
+              <h3 class="text-base font-extrabold text-stone-900 leading-snug">${r.title}</h3>
+
+              <div class="flex items-center gap-3 text-xs text-stone-500 font-medium">
+                <span>🔥 ${scaledCals} kcal</span>
+                <span>•</span>
+                <span>💪 ${scaledProtein}g protein</span>
+                <span>•</span>
+                <span>🍽 ${scale} serving${scale > 1 ? "s" : ""}</span>
+              </div>
+
+              <div class="flex flex-wrap gap-1.5 pt-0.5">
+                ${ingPills}
+              </div>
+
+              ${ev.suggestedSwaps.length > 0 ? `
+                <div class="text-[11px] text-sky-950 bg-sky-50/80 border border-sky-200/80 rounded-lg px-2.5 py-1.5">
+                  <span class="font-bold">⇄ Smart Swaps:</span> ${ev.suggestedSwaps.map(s => `${s.missing} → ${s.alternatives.slice(0, 2).join(" or ")}`).join(" • ")}
+                </div>
+              ` : ""}
+
+              ${ev.assumedPantry.length > 0 ? `
+                <div class="text-[11px] text-amber-900/90 bg-amber-50/70 border border-amber-200/70 rounded-lg px-2.5 py-1.5">
+                  <span class="font-bold">🌿 Assumed Recipe Pantry:</span> ${ev.assumedPantry.join(", ")}
+                </div>
+              ` : ""}
+            </div>
+
+            <div class="pt-3 border-t border-stone-100 flex items-center gap-1.5">
+              <button type="button" data-open-recipe="${r.id}" class="flex-1 py-2 px-2.5 rounded-xl bg-stone-900 hover:bg-stone-800 text-white text-xs font-bold transition">
+                View Recipe
+              </button>
+              <a href="${videoUrl}" target="_blank" rel="noopener noreferrer" class="py-2 px-2.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-bold transition inline-flex items-center gap-1" title="Watch cooking tutorial video">
+                <span>▶</span>
+                <span>Video</span>
+              </a>
+              <button type="button" data-quick-week="${r.id}" class="py-2 px-2.5 rounded-xl bg-orange-50 hover:bg-orange-100 text-[#D95D39] border border-orange-200 text-xs font-bold transition">
+                + Week
+              </button>
+            </div>
+          </article>
+        `;
+      }).join("");
+
+      grid.querySelectorAll("[data-open-recipe]").forEach(btn => {
+        btn.addEventListener("click", () => openRecipeModal(btn.dataset.openRecipe));
+      });
+
+      grid.querySelectorAll("[data-quick-week]").forEach(btn => {
+        btn.addEventListener("click", () => assignRecipeToNextOpenDay(btn.dataset.quickWeek));
+      });
+    }
+
+    // =========================================================================
+    // 6. WEEKLY MEAL PLANNER WITH PORTION DEPLETION & GROCERY LIST
+    // =========================================================================
+    function assignRecipeToNextOpenDay(recipeId) {
+      const r = getRecipeById(recipeId);
+      if (!r) return;
+      trackCuisineAffinity(r.cuisine, 2);
+
+      const openDay = DAYS_OF_WEEK.find(d => !state.weeklyPlan[d]);
+      const targetDay = openDay || "Monday";
+      state.weeklyPlan[targetDay] = recipeId;
+      saveState();
+      renderAll();
+      showToast(`Scheduled "${r.title}" on ${targetDay}!`);
+    }
+
+    function autoFillWeeklyPlan() {
+      const pool = getFilteredEvaluatedRecipes();
+      if (pool.length === 0) {
+        showToast("Add ingredients or adjust filters first to auto-fill your week.");
+        return;
+      }
+
+      const affinities = Object.entries(state.cuisineAffinity).sort((a, b) => b[1] - a[1]);
+      const topCuisine = affinities.length > 0 && affinities[0][1] >= 2 ? affinities[0][0] : null;
+
+      const virtualStock = new Map();
+      state.pantry.forEach(item => {
+        virtualStock.set(
+          item.name.toLowerCase(),
+          isPortionedItem(item.name) ? (item.portions ?? 4) : Infinity
+        );
+      });
+
+      const usedIds = new Set(Object.values(state.weeklyPlan).filter(Boolean));
+      Object.values(state.weeklyPlan).forEach(rId => {
+        const r = getRecipeById(rId);
+        if (r) deductRecipeFromVirtualStock(r, virtualStock);
+      });
+
+      let filledCount = 0;
+      const usedCuisinesThisWeek = new Set();
+
+      DAYS_OF_WEEK.forEach(day => {
+        if (state.weeklyPlan[day]) {
+          const existing = getRecipeById(state.weeklyPlan[day]);
+          if (existing) usedCuisinesThisWeek.add(existing.cuisine);
+          return;
+        }
+
+        let bestCandidate = null;
+        let bestScore = -Infinity;
+
+        for (const ev of pool) {
+          const r = ev.recipe;
+          if (usedIds.has(r.id)) continue;
+
+          const stockOk = canCoverRecipeWithVirtualStock(r, virtualStock);
+          let score = ev.matchPct * 2;
+          if (stockOk) score += 120;
+
+          if (topCuisine) {
+            if (r.cuisine === topCuisine) score += 75;
+          } else {
+            if (!usedCuisinesThisWeek.has(r.cuisine)) score += 45;
+          }
+
+          if (score > bestScore) {
+            bestScore = score;
+            bestCandidate = r;
+          }
+        }
+
+        if (bestCandidate) {
+          state.weeklyPlan[day] = bestCandidate.id;
+          usedIds.add(bestCandidate.id);
+          usedCuisinesThisWeek.add(bestCandidate.cuisine);
+          deductRecipeFromVirtualStock(bestCandidate, virtualStock);
+          filledCount++;
+        }
+      });
+
+      saveState();
+      renderAll();
+      showToast(filledCount > 0
+        ? `Auto-filled ${filledCount} day${filledCount > 1 ? "s" : ""} respecting your available portions!`
+        : "Your week is already filled!"
+      );
+    }
+
+    function canCoverRecipeWithVirtualStock(recipe, virtualStock) {
+      for (const rawIng of (recipe.ingredients || [])) {
+        const ing = normalizeIngredientName(rawIng);
+        if (!ing || isBasicUniversalItem(ing) || isAssumedForRecipe(ing, recipe)) continue;
+        const direct = virtualStock.get(ing.toLowerCase()) || 0;
+        if (direct >= state.servings) continue;
+        const swList = getSuggestedSwapsForIngredient(ing, recipe);
+        const hasSwap = swList.some(sw => (virtualStock.get(sw.toLowerCase()) || 0) >= state.servings);
+        if (!hasSwap) return false;
+      }
+      return true;
+    }
+
+    function deductRecipeFromVirtualStock(recipe, virtualStock) {
+      for (const rawIng of (recipe.ingredients || [])) {
+        const ing = normalizeIngredientName(rawIng);
+        if (!ing || isBasicUniversalItem(ing) || isAssumedForRecipe(ing, recipe)) continue;
+
+        const key = ing.toLowerCase();
+        const curDirect = virtualStock.get(key) || 0;
+        if (curDirect > 0) {
+          if (Number.isFinite(curDirect)) {
+            virtualStock.set(key, Math.max(0, curDirect - state.servings));
+          }
+          continue;
+        }
+        const swList = getSuggestedSwapsForIngredient(ing, recipe);
+        for (const sw of swList) {
+          const swKey = sw.toLowerCase();
+          const curSwap = virtualStock.get(swKey) || 0;
+          if (curSwap > 0) {
+            if (Number.isFinite(curSwap)) {
+              virtualStock.set(swKey, Math.max(0, curSwap - state.servings));
+            }
+            break;
+          }
+        }
+      }
+    }
+
+    function markRecipeCooked(recipeId) {
+      const r = getRecipeById(recipeId);
+      if (!r) return;
+
+      const scale = state.servings;
+
+      (r.ingredients || []).forEach(rawIng => {
+        const ing = normalizeIngredientName(rawIng);
+        if (!ing || isBasicUniversalItem(ing) || isAssumedForRecipe(ing, r)) return;
+
+        let targetItem = state.pantry.find(p => p.name.toLowerCase() === ing.toLowerCase());
+        if (!targetItem) {
+          const swList = getSuggestedSwapsForIngredient(ing, r);
+          for (const sw of swList) {
+            targetItem = state.pantry.find(p => p.name.toLowerCase() === sw.toLowerCase());
+            if (targetItem) break;
+          }
+        }
+
+        if (targetItem && isPortionedItem(targetItem.name)) {
+          targetItem.portions = Math.max(0, (targetItem.portions ?? 4) - scale);
+        }
+      });
+
+      state.pantry = state.pantry.filter(p => !isPortionedItem(p.name) || p.portions > 0);
+      state.cookedHistory.push({
+        id: r.id,
+        title: r.title,
+        servings: scale,
+        date: new Date().toISOString()
+      });
+
+      trackCuisineAffinity(r.cuisine, 3);
+      saveState();
+      renderAll();
+      showToast(`✅ Cooked "${r.title}"! Updated portions & takeout savings.`);
+    }
+
+    function renderPlanner() {
+      const grid = document.getElementById("weeklyPlannerGrid");
+      const groceryListEl = document.getElementById("weeklyGroceryList");
+      const tasteBadge = document.getElementById("tasteProfileBadge");
+      if (!grid) return;
+
+      const affinities = Object.entries(state.cuisineAffinity).sort((a, b) => b[1] - a[1]);
+      if (tasteBadge) {
+        tasteBadge.textContent = affinities.length > 0 && affinities[0][1] >= 2
+          ? `Taste Profile: ${affinities[0][0]} Favorite`
+          : "Taste Profile: Global Variety";
+      }
+
+      const runningStock = new Map();
+      state.pantry.forEach(item => {
+        runningStock.set(
+          item.name.toLowerCase(),
+          isPortionedItem(item.name) ? (item.portions ?? 4) : Infinity
+        );
+      });
+      const weeklyMissingSet = new Set();
+
+      grid.innerHTML = DAYS_OF_WEEK.map(day => {
+        const rId = state.weeklyPlan[day];
+        const r = rId ? getRecipeById(rId) : null;
+
+        if (!r) {
+          return `
+            <div class="rounded-xl border border-dashed border-stone-200 bg-[#FAF9F6] p-3 flex flex-col justify-between min-h-[140px]">
+              <div class="text-xs font-extrabold uppercase tracking-wider text-stone-400">${day.slice(0, 3)}</div>
+              <p class="text-[11px] text-stone-400 my-2">No meal scheduled</p>
+              <span class="text-[10px] text-stone-400">Click "+ Week" on any dish</span>
+            </div>
+          `;
+        }
+
+        const shortages = [];
+        (r.ingredients || []).forEach(rawIng => {
+          const ing = normalizeIngredientName(rawIng);
+          if (!ing || isBasicUniversalItem(ing) || isAssumedForRecipe(ing, r)) return;
+
+          const directAvail = runningStock.get(ing.toLowerCase()) || 0;
+          if (directAvail >= state.servings) {
+            if (Number.isFinite(directAvail)) {
+              runningStock.set(ing.toLowerCase(), directAvail - state.servings);
+            }
+            return;
+          }
+
+          const swList = getSuggestedSwapsForIngredient(ing, r);
+          const validSwap = swList.find(sw => (runningStock.get(sw.toLowerCase()) || 0) >= state.servings);
+          if (validSwap) {
+            const swAvail = runningStock.get(validSwap.toLowerCase());
+            if (Number.isFinite(swAvail)) {
+              runningStock.set(validSwap.toLowerCase(), swAvail - state.servings);
+            }
+            return;
+          }
+
+          shortages.push(ing);
+          weeklyMissingSet.add(ing);
+        });
+
+        return `
+          <div class="rounded-xl border ${shortages.length ? "border-amber-300 bg-amber-50/40" : "border-stone-200 bg-white"} p-3 flex flex-col justify-between gap-2 shadow-2xs">
+            <div class="space-y-1.5">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-extrabold uppercase tracking-wider text-[#D95D39]">${day.slice(0, 3)}</span>
+                <button type="button" data-remove-day="${day}" class="text-xs text-stone-400 hover:text-rose-600 font-bold" title="Remove from ${day}">✕</button>
+              </div>
+              <button type="button" data-open-recipe="${r.id}" class="text-left text-xs font-extrabold text-stone-900 hover:text-[#D95D39] leading-snug line-clamp-2">
+                ${r.title}
+              </button>
+              <div class="text-[10px] text-stone-500 font-medium">${r.cuisine} • ⏱ ${r.prepTime}m</div>
+              ${shortages.length
+                ? `<div class="text-[10px] font-semibold text-amber-800 bg-amber-100/80 px-1.5 py-0.5 rounded">Need: ${shortages.join(", ")}</div>`
+                : `<div class="text-[10px] font-semibold text-[#3A7D5C]">✓ Stock covered</div>`
+              }
+            </div>
+            <button type="button" data-cooked-day="${day}" class="w-full py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-[#3A7D5C] border border-emerald-200 text-[11px] font-bold transition">
+              ✓ Cooked
+            </button>
+          </div>
+        `;
+      }).join("");
+
+      grid.querySelectorAll("[data-remove-day]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          delete state.weeklyPlan[btn.dataset.removeDay];
+          saveState();
+          renderAll();
+        });
+      });
+
+      grid.querySelectorAll("[data-open-recipe]").forEach(btn => {
+        btn.addEventListener("click", () => openRecipeModal(btn.dataset.openRecipe));
+      });
+
+      grid.querySelectorAll("[data-cooked-day]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const day = btn.dataset.cookedDay;
+          const rId = state.weeklyPlan[day];
+          if (rId) {
+            delete state.weeklyPlan[day];
+            markRecipeCooked(rId);
+          }
+        });
+      });
+
+      if (groceryListEl) {
+        const missingArr = [...weeklyMissingSet];
+        if (missingArr.length === 0) {
+          groceryListEl.innerHTML = `<span class="text-xs text-amber-900/75 font-medium">🎉 Everything needed for your scheduled week is already covered by your kitchen stock!</span>`;
+        } else {
+          groceryListEl.innerHTML = missingArr.map(item => {
+            const checked = state.checkedGroceryItems.includes(item);
+            return `
+              <label class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-semibold cursor-pointer transition ${checked ? "bg-emerald-100 border-emerald-300 text-emerald-950 line-through" : "bg-white border-amber-200 text-stone-800"}">
+                <input type="checkbox" value="${item}" ${checked ? "checked" : ""} class="grocery-item-cb rounded accent-[#3A7D5C]" />
+                <span>${item}</span>
+              </label>
+            `;
+          }).join("");
+
+          groceryListEl.querySelectorAll(".grocery-item-cb").forEach(cb => {
+            cb.addEventListener("change", () => {
+              const val = cb.value;
+              if (cb.checked) {
+                if (!state.checkedGroceryItems.includes(val)) state.checkedGroceryItems.push(val);
+              } else {
+                state.checkedGroceryItems = state.checkedGroceryItems.filter(x => x !== val);
+              }
+              saveState();
+              renderPlanner();
+            });
+          });
+        }
+      }
+    }
+
+    function renderSavingsFooter() {
+      const savingsEl = document.getElementById("estimatedSavingsDisplay");
+      const breakdownEl = document.getElementById("savingsBreakdownText");
+      if (!savingsEl || !breakdownEl) return;
+
+      const cookedServings = state.cookedHistory.reduce((acc, entry) => acc + (entry.servings || 1), 0);
+      const plannedDaysCount = Object.values(state.weeklyPlan).filter(Boolean).length;
+      const plannedServings = plannedDaysCount * state.servings;
+      const totalServings = cookedServings + plannedServings;
+      const dollarsSaved = totalServings * 14;
+
+      savingsEl.textContent = `$${dollarsSaved.toLocaleString()}`;
+      breakdownEl.textContent = `(${cookedServings} cooked + ${plannedServings} planned servings @ $14/serving saved)`;
+    }
+
+    // =========================================================================
+    // 7. RECIPE DETAILS MODAL, SMART SWAPS, DIRECT VIDEO & COOK MODE
+    // =========================================================================
+    async function toggleWakeLock(enable) {
+      try {
+        if (enable && "wakeLock" in navigator) {
+          activeWakeLock = await navigator.wakeLock.request("screen");
+        } else if (!enable && activeWakeLock) {
+          await activeWakeLock.release();
+          activeWakeLock = null;
+        }
+      } catch (e) {
+        console.warn("Wake Lock unavailable:", e);
+      }
+    }
+
+    function openRecipeModal(recipeId) {
+      const ev = evaluateRecipe(getRecipeById(recipeId));
+      if (!ev || !ev.recipe) return;
+      const r = ev.recipe;
+      trackCuisineAffinity(r.cuisine, 1);
+      saveState();
+
+      cookModeEnabled = false;
+      checkedCookSteps = new Set();
+
+      const modal = document.getElementById("recipeModal");
+      const content = document.getElementById("recipeModalContent");
+      if (!modal || !content) return;
+
+      function renderModalBody() {
+        const scale = state.servings;
+        const scaledCals = Math.round((r.calories || 320) * scale);
+        const scaledProtein = Math.round((r.protein || 12) * scale);
+        const videoUrl = getRecipeVideoUrl(r);
+
+        const ingHtml = ev.ingredientBreakdown.map(item => {
+          const amt = formatScaledAmount(item.name, scale);
+          if (item.status === "have") {
+            return `<li class="flex items-center justify-between py-2 border-b border-stone-100 text-xs sm:text-sm">
+              <span class="font-semibold text-stone-800">✓ ${item.name}</span>
+              <span class="text-stone-500 font-medium">${amt}</span>
+            </li>`;
+          }
+          if (item.status === "swap") {
+            return `<li class="flex items-center justify-between py-2 border-b border-stone-100 text-xs sm:text-sm">
+              <span class="font-semibold text-amber-800">⇄ ${item.name} <span class="text-xs font-normal">(using ${item.swapUsed} from your kitchen)</span></span>
+              <span class="text-stone-500 font-medium">${amt}</span>
+            </li>`;
+          }
+          const swapOptions = item.possibleSwaps || [];
+          return `<li class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 py-2 border-b border-stone-100 text-xs sm:text-sm">
+            <div>
+              <span class="font-medium text-stone-700">+ ${item.name} <span class="text-[11px] text-rose-600 font-semibold">(missing)</span></span>
+              ${swapOptions.length > 0 ? `<div class="text-[11px] text-sky-800 font-semibold mt-0.5">⇄ Smart Swap: ${swapOptions.join(" or ")}</div>` : ""}
+            </div>
+            <span class="text-stone-400 font-medium">${amt}</span>
+          </li>`;
+        }).join("");
+
+        const stepsHtml = (r.steps || []).map((step, i) => {
+          const isDone = checkedCookSteps.has(i);
+          return `
+            <li data-step-idx="${i}" class="p-3 rounded-xl border transition cursor-pointer ${isDone ? "bg-emerald-50/70 border-emerald-200 text-stone-400 line-through" : "bg-[#FAF9F6] border-stone-200 text-stone-800"} ${cookModeEnabled ? "text-base sm:text-lg leading-relaxed" : "text-xs sm:text-sm"}">
+              <span class="font-extrabold text-[#D95D39] mr-1.5">Step ${i + 1}:</span> ${step}
+            </li>
+          `;
+        }).join("");
+
+        content.innerHTML = `
+          <div class="p-4 sm:p-5 border-b border-stone-100 flex items-start justify-between gap-3">
+            <div>
+              <div class="flex flex-wrap items-center gap-1.5 mb-1">
+                <span class="px-2 py-0.5 rounded-lg text-xs font-bold bg-orange-50 text-[#D95D39]">${r.cuisine}</span>
+                <span class="px-2 py-0.5 rounded-lg text-xs font-semibold bg-stone-100 text-stone-700">${r.method || "Stovetop"}</span>
+                <span class="px-2 py-0.5 rounded-lg text-xs font-semibold bg-stone-100 text-stone-700">⏱ ${r.prepTime} mins</span>
+                <span class="px-2 py-0.5 rounded-lg text-xs font-semibold bg-emerald-50 text-[#3A7D5C]">${ev.matchPct}% Kitchen Match</span>
+              </div>
+              <h3 class="text-lg sm:text-xl font-extrabold text-stone-900">${r.title}</h3>
+            </div>
+            <button id="closeRecipeModalBtn" type="button" class="w-8 h-8 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-600 font-bold flex items-center justify-center shrink-0">✕</button>
+          </div>
+
+          <div class="p-4 sm:p-5 overflow-y-auto space-y-4">
+            <div class="flex flex-wrap items-center justify-between gap-2 bg-stone-50 p-2.5 rounded-xl border border-stone-200">
+              <div class="inline-flex items-center gap-1">
+                <span class="text-xs font-semibold text-stone-500 px-1.5">Servings:</span>
+                ${[1, 2, 4].map(n => `
+                  <button type="button" data-modal-serv="${n}" class="px-2.5 py-1 rounded-lg text-xs font-bold transition ${state.servings === n ? "bg-[#D95D39] text-white" : "bg-white text-stone-700 border border-stone-200"}">${n}</button>
+                `).join("")}
+              </div>
+
+              <div class="flex flex-wrap items-center gap-2">
+                <a href="${videoUrl}" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white shadow-2xs transition inline-flex items-center gap-1.5">
+                  <span>▶</span>
+                  <span>Watch Video Tutorial</span>
+                </a>
+                <button id="toggleCookModeBtn" type="button" class="px-3 py-1.5 rounded-xl text-xs font-bold border transition ${cookModeEnabled ? "bg-stone-900 text-white border-stone-900" : "bg-white text-stone-800 border-stone-300 hover:bg-stone-100"}">
+                  👨‍🍳 Cook Mode: ${cookModeEnabled ? "ON" : "OFF"}
+                </button>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-2 text-center">
+              <div class="p-2.5 rounded-xl bg-[#FAF9F6] border border-stone-200">
+                <div class="text-[11px] text-stone-500 font-medium">Total Calories</div>
+                <div class="text-sm font-extrabold text-stone-900">${scaledCals} kcal</div>
+              </div>
+              <div class="p-2.5 rounded-xl bg-[#FAF9F6] border border-stone-200">
+                <div class="text-[11px] text-stone-500 font-medium">Total Protein</div>
+                <div class="text-sm font-extrabold text-[#3A7D5C]">${scaledProtein}g</div>
+              </div>
+              <div class="p-2.5 rounded-xl bg-[#FAF9F6] border border-stone-200">
+                <div class="text-[11px] text-stone-500 font-medium">Takeout Saved</div>
+                <div class="text-sm font-extrabold text-[#D95D39]">$${scale * 14}</div>
+              </div>
+            </div>
+
+            <div>
+              <h4 class="text-xs font-extrabold uppercase tracking-wider text-stone-500 mb-2">Ingredients (Scaled for ${scale} Serving${scale > 1 ? "s" : ""})</h4>
+              <ul class="divide-y divide-stone-100">${ingHtml}</ul>
+              ${ev.assumedPantry.length > 0 ? `
+                <div class="mt-2.5 p-2.5 rounded-xl bg-amber-50/80 border border-amber-200/90 text-xs text-amber-950">
+                  <span class="font-bold">🌿 Assumed Recipe Pantry (Already Counted):</span>
+                  <span class="text-amber-900">${ev.assumedPantry.join(", ")}</span>
+                </div>
+              ` : ""}
+            </div>
+
+            <div>
+              <h4 class="text-xs font-extrabold uppercase tracking-wider text-stone-500 mb-2">Preparation Steps (Tap step to check off)</h4>
+              <ol class="space-y-2">${stepsHtml}</ol>
+            </div>
+          </div>
+
+          <div class="p-4 sm:p-5 border-t border-stone-100 bg-stone-50 rounded-b-2xl flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+              <button id="copyRecipeBtn" type="button" class="px-3.5 py-2 rounded-xl bg-white hover:bg-stone-100 text-stone-800 border border-stone-300 text-xs font-bold transition">
+                📋 Copy Recipe
+              </button>
+              <button id="modalAddWeekBtn" type="button" class="px-3.5 py-2 rounded-xl bg-orange-50 hover:bg-orange-100 text-[#D95D39] border border-orange-200 text-xs font-bold transition">
+                + Add to Week
+              </button>
+            </div>
+            <button id="modalCookedBtn" type="button" class="px-4 py-2 rounded-xl bg-[#3A7D5C] hover:bg-[#2f664b] text-white text-xs sm:text-sm font-extrabold shadow-xs transition">
+              ✅ I Cooked This! (−${scale}x Stock)
+            </button>
+          </div>
+        `;
+
+        content.querySelector("#closeRecipeModalBtn")?.addEventListener("click", () => {
+          toggleWakeLock(false);
+          modal.classList.add("hidden");
+        });
+
+        content.querySelectorAll("[data-modal-serv]").forEach(btn => {
+          btn.addEventListener("click", () => {
+            state.servings = Number(btn.dataset.modalServ);
+            saveState();
+            renderAll();
+            renderModalBody();
+          });
+        });
+
+        content.querySelector("#toggleCookModeBtn")?.addEventListener("click", () => {
+          cookModeEnabled = !cookModeEnabled;
+          toggleWakeLock(cookModeEnabled);
+          renderModalBody();
+        });
+
+        content.querySelectorAll("[data-step-idx]").forEach(li => {
+          li.addEventListener("click", () => {
+            const idx = Number(li.dataset.stepIdx);
+            if (checkedCookSteps.has(idx)) checkedCookSteps.delete(idx);
+            else checkedCookSteps.add(idx);
+            renderModalBody();
+          });
+        });
+
+        content.querySelector("#copyRecipeBtn")?.addEventListener("click", () => {
+          const text = [
+            `${r.title} (${r.cuisine} • ${scale} Servings)`,
+            `Calories: ${scaledCals} kcal | Protein: ${scaledProtein}g`,
+            `Video Tutorial: ${videoUrl}`,
+            "",
+            "Ingredients:",
+            ...ev.ingredientBreakdown.map(i => `- ${i.name}: ${formatScaledAmount(i.name, scale)}`),
+            "",
+            "Steps:",
+            ...(r.steps || []).map((s, idx) => `${idx + 1}. ${s}`)
+          ].join("\n");
+          copyTextFallback(text);
+          showToast("📋 Recipe copied to clipboard!");
+        });
+
+        content.querySelector("#modalAddWeekBtn")?.addEventListener("click", () => {
+          assignRecipeToNextOpenDay(r.id);
+        });
+
+        content.querySelector("#modalCookedBtn")?.addEventListener("click", () => {
+          toggleWakeLock(false);
+          modal.classList.add("hidden");
+          markRecipeCooked(r.id);
+        });
+      }
+
+      renderModalBody();
+      modal.classList.remove("hidden");
+    }
+
+    // =========================================================================
+    // 8. VOICE INPUT, DELIVERY/RECEIPT OCR & MULTI-PROXY URL IMPORTER
+    // =========================================================================
+    let speechRecognition = null;
+    let isListeningVoice = false;
+
+    function setupVoiceInput() {
+      const voiceBtn = document.getElementById("voiceInputBtn");
+      const stopBtn = document.getElementById("stopVoiceBtn");
+      const statusBanner = document.getElementById("voiceStatusBanner");
+      const statusText = document.getElementById("voiceStatusText");
+      const inputEl = document.getElementById("ingredientInput");
+      if (!voiceBtn || !inputEl) return;
+
+      const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRec) {
+        voiceBtn.addEventListener("click", () => {
+          showToast("🎙️ Voice input is not supported in this browser—type ingredients instead.");
+        });
+        return;
+      }
+
+      speechRecognition = new SpeechRec();
+      speechRecognition.lang = "en-US";
+      speechRecognition.interimResults = true;
+      speechRecognition.continuous = true;
+
+      speechRecognition.onstart = () => {
+        isListeningVoice = true;
+        voiceBtn.classList.add("bg-rose-600", "text-white", "border-rose-600", "animate-mic");
+        voiceBtn.classList.remove("bg-orange-50", "text-[#D95D39]");
+        statusBanner?.classList.remove("hidden");
+        if (statusText) statusText.textContent = '🎙️ Listening... say ingredients (e.g., "Paneer, dosa batter, onions, eggs")';
+      };
+
+      speechRecognition.onresult = event => {
+        let transcript = "";
+        for (let i = 0; i < event.results.length; i++) {
+          transcript += event.results[i][0].transcript + " ";
+        }
+        const cleanedSpeech = transcript
+          .replace(/\b(and|also|some|a few|a bag of|a carton of|a box of|i have|we have)\b/gi, ",")
+          .replace(/\s+/g, " ")
+          .trim();
+        inputEl.value = cleanedSpeech;
+        if (statusText) statusText.textContent = `🎙️ Heard: "${cleanedSpeech}"`;
+      };
+
+      speechRecognition.onerror = err => {
+        console.warn("Speech error:", err);
+        stopVoiceListening(false);
+        showToast("🎙️ Voice capture paused. Tap the mic to speak again.");
+      };
+
+      speechRecognition.onend = () => {
+        if (isListeningVoice) {
+          stopVoiceListening(true);
+        }
+      };
+
+      voiceBtn.addEventListener("click", () => {
+        if (isListeningVoice) {
+          stopVoiceListening(true);
+        } else {
+          try {
+            speechRecognition.start();
+          } catch (_) {}
+        }
+      });
+
+      stopBtn?.addEventListener("click", () => stopVoiceListening(true));
+    }
+
+    function stopVoiceListening(autoAdd = true) {
+      const voiceBtn = document.getElementById("voiceInputBtn");
+      const statusBanner = document.getElementById("voiceStatusBanner");
+      const inputEl = document.getElementById("ingredientInput");
+
+      isListeningVoice = false;
+      try {
+        speechRecognition?.stop();
+      } catch (_) {}
+
+      voiceBtn?.classList.remove("bg-rose-600", "text-white", "border-rose-600", "animate-mic");
+      voiceBtn?.classList.add("bg-orange-50", "text-[#D95D39]");
+      statusBanner?.classList.add("hidden");
+
+      if (autoAdd && inputEl && inputEl.value.trim()) {
+        const rawItems = inputEl.value.split(/[,;\n]+/).map(s => s.trim()).filter(Boolean);
+        const added = addIngredientsToKitchen(rawItems, 4);
+        inputEl.value = "";
+        if (added > 0) showToast(`🎙️ Added ${added} spoken ingredient${added > 1 ? "s" : ""} to your kitchen!`);
+      }
+    }
+
+    const DELIVERY_PRODUCT_DICTIONARY = [
+      { pattern: /\b(dosa\s*batter|idli\s*batter|uttapam\s*batter)\b/i, item: "Dosa Batter" },
+      { pattern: /\b(paneer|cottage\s*cheese|malai\s*paneer)\b/i, item: "Paneer" },
+      { pattern: /\b(tofu|bean\s*curd)\b/i, item: "Tofu" },
+      { pattern: /\b(large\s*eggs?|organic\s*eggs?|brown\s*eggs?|dozen\s*eggs?|eggs?)\b/i, item: "Eggs" },
+      { pattern: /\b(chicken\s*breast|chicken\s*thighs?|boneless\s*chicken|chicken)\b/i, item: "Chicken" },
+      { pattern: /\b(atlantic\s*salmon|salmon\s*fillet|salmon)\b/i, item: "Salmon" },
+      { pattern: /\b(shrimp|prawns)\b/i, item: "Shrimp" },
+      { pattern: /\b(baby\s*spinach|fresh\s*spinach|spinach|palak)\b/i, item: "Spinach" },
+      { pattern: /\b(cauliflower|gobi|gobhi)\b/i, item: "Cauliflower" },
+      { pattern: /\b(broccoli\s*crowns?|broccoli)\b/i, item: "Broccoli" },
+      { pattern: /\b(russet\s*potato|yukon\s*gold|red\s*potato|potatoes|potato)\b/i, item: "Potato" },
+      { pattern: /\b(yellow\s*onion|red\s*onion|sweet\s*onion|white\s*onion|onions|onion)\b/i, item: "Onion" },
+      { pattern: /\b(roma\s*tomato|cherry\s*tomato|vine\s*tomato|tomatoes|tomato)\b/i, item: "Tomato" },
+      { pattern: /\b(garlic\s*bulbs?|peeled\s*garlic|garlic)\b/i, item: "Garlic" },
+      { pattern: /\b(bell\s*peppers?|red\s*pepper|green\s*pepper|capsicum)\b/i, item: "Bell Pepper" },
+      { pattern: /\b(cremini\s*mushroom|button\s*mushroom|mushrooms|mushroom)\b/i, item: "Mushroom" },
+      { pattern: /\b(basmati\s*rice|jasmine\s*rice|brown\s*rice|white\s*rice|rice)\b/i, item: "Rice" },
+      { pattern: /\b(spaghetti|penne|fusilli|rotini|macaroni|pasta)\b/i, item: "Pasta" },
+      { pattern: /\b(ramen|hakka\s*noodles|rice\s*noodles|noodles)\b/i, item: "Noodles" },
+      { pattern: /\b(quinoa)\b/i, item: "Quinoa" },
+      { pattern: /\b(rolled\s*oats|old\s*fashioned\s*oats|oatmeal|oats)\b/i, item: "Oats" },
+      { pattern: /\b(flour\s*tortillas|corn\s*tortillas|tortillas|tortilla)\b/i, item: "Tortillas" },
+      { pattern: /\b(chapati|roti|naan|paratha)\b/i, item: "Roti" },
+      { pattern: /\b(sourdough|whole\s*wheat\s*bread|brioche|white\s*bread|bread)\b/i, item: "Bread" },
+      { pattern: /\b(chickpeas|garbanzo\s*beans|chana)\b/i, item: "Chickpeas" },
+      { pattern: /\b(black\s*beans)\b/i, item: "Black Beans" },
+      { pattern: /\b(toor\s*dal|moong\s*dal|masoor\s*dal|red\s*lentils|lentils)\b/i, item: "Lentils" },
+      { pattern: /\b(shredded\s*mozzarella|cheddar|parmesan|feta|cheese)\b/i, item: "Cheese" },
+      { pattern: /\b(greek\s*yogurt|plain\s*yogurt|dahi|curd|yogurt)\b/i, item: "Yogurt" },
+      { pattern: /\b(whole\s*milk|2%\s*milk|oat\s*milk|almond\s*milk|milk)\b/i, item: "Milk" },
+      { pattern: /\b(unsalted\s*butter|salted\s*butter|butter)\b/i, item: "Butter" },
+      { pattern: /\b(desi\s*ghee|clarified\s*butter|ghee)\b/i, item: "Ghee" },
+      { pattern: /\b(olive\s*oil|avocado\s*oil|canola\s*oil|vegetable\s*oil|cooking\s*oil)\b/i, item: "Oil" },
+      { pattern: /\b(soy\s*sauce|tamari)\b/i, item: "Soy Sauce" },
+      { pattern: /\b(honeycrisp|gala\s*apples?|fuji\s*apples?|apples|apple)\b/i, item: "Apple" },
+      { pattern: /\b(organic\s*bananas?|bananas|banana)\b/i, item: "Banana" }
+    ];
+
+    async function processReceiptFile(file) {
+      const statusBox = document.getElementById("ocrStatusBox");
+      const statusText = document.getElementById("ocrStatusText");
+      if (!file || !statusBox || !statusText) return;
+
+      statusBox.classList.remove("hidden");
+      statusText.textContent = "🧾 Reading store receipt / delivery screenshot (DoorDash, Instacart, Amazon, Walmart)...";
+
+      try {
+        let extractedText = "";
+        if (file.type === "application/pdf" && window.pdfjsLib) {
+          const arrayBuffer = await file.arrayBuffer();
+          const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+          const page = await pdf.getPage(1);
+          const viewport = page.getViewport({ scale: 1.6 });
+          const canvas = document.createElement("canvas");
+          canvas.width = viewport.width;
+          canvas.height = viewport.height;
+          await page.render({ canvasContext: canvas.getContext("2d"), viewport }).promise;
+          const result = await Tesseract.recognize(canvas, "eng");
+          extractedText = result.data.text || "";
+        } else {
+          const result = await Tesseract.recognize(file, "eng");
+          extractedText = result.data.text || "";
+        }
+
+        const platformMatch = extractedText.match(/\b(doordash|instacart|amazon|whole\s*foods|walmart|uber\s*eats|costco|safeway)\b/i);
+        const sourceLabel = platformMatch ? platformMatch[0].toUpperCase() : "RECEIPT";
+
+        const noiseRegex = new RegExp(
+          "^(doordash|instacart|amazon|walmart|subtotal|delivery\\s*fee|service\\s*fee|driver\\s*tip|estimated\\s*tax|total|order\\s*#|delivered|view\\s*receipt|reorder|qty\\s*\\d+|items?\\s*\\(\\d+\\))",
+          "i"
+        );
+
+        const foundItems = new Set();
+        const lines = extractedText.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+
+        lines.forEach(line => {
+          if (noiseRegex.test(line)) return;
+          for (const entry of DELIVERY_PRODUCT_DICTIONARY) {
+            if (entry.pattern.test(line)) {
+              foundItems.add(entry.item);
+            }
+          }
+          const lower = line.toLowerCase();
+          Object.keys(INGREDIENT_ALIASES).forEach(alias => {
+            if (lower.includes(alias)) foundItems.add(INGREDIENT_ALIASES[alias]);
+          });
+        });
+
+        const itemsArr = [...foundItems].filter(Boolean);
+        if (itemsArr.length > 0) {
+          addIngredientsToKitchen(itemsArr, 4);
+          statusText.textContent = `✅ [${sourceLabel}] Added ${itemsArr.length} item${itemsArr.length > 1 ? "s" : ""}: ${itemsArr.join(", ")}`;
+          showToast(`🧾 Added ${itemsArr.length} items from ${sourceLabel}!`);
+        } else {
+          statusText.textContent = "⚠️ No clear grocery items recognized—try cropping closer to the item list in your DoorDash/Instacart/Amazon/Walmart screenshot.";
+        }
+      } catch (err) {
+        console.error("OCR error:", err);
+        statusText.textContent = "⚠️ Could not read receipt file. Please try an image screenshot or enter ingredients manually.";
+      }
+    }
+
+    async function parseRecipeFromUrl() {
+      const urlInput = document.getElementById("recipeUrlInput");
+      const statusEl = document.getElementById("urlParseStatus");
+      const rawUrl = urlInput?.value.trim();
+      if (!rawUrl || !statusEl) return;
+
+      const url = /^https?:\/\//i.test(rawUrl) ? rawUrl : `https://${rawUrl}`;
+      if (urlInput) urlInput.value = url;
+
+      statusEl.classList.remove("hidden");
+      statusEl.textContent = "⏳ Fetching recipe ingredients & steps from URL...";
+
+      let parsedTitle = "";
+      let parsedIngredients = [];
+      let parsedSteps = [];
+      let detectedMethod = "";
+      let detectedCuisine = "";
+
+      function extractFromHtmlString(html) {
+        if (!html || html.length < 200) return false;
+        const doc = new DOMParser().parseFromString(html, "text/html");
+
+        const findRecipeNodes = (obj, acc = []) => {
+          if (!obj || typeof obj !== "object") return acc;
+          if (Array.isArray(obj)) {
+            obj.forEach(item => findRecipeNodes(item, acc));
+            return acc;
+          }
+          const t = obj["@type"];
+          const isRecipe = t === "Recipe" || (Array.isArray(t) && t.includes("Recipe"));
+          if (isRecipe) acc.push(obj);
+          Object.values(obj).forEach(val => {
+            if (val && typeof val === "object") findRecipeNodes(val, acc);
+          });
+          return acc;
+        };
+
+        doc.querySelectorAll('script[type="application/ld+json"]').forEach(sc => {
+          try {
+            const json = JSON.parse(sc.textContent);
+            const recipes = findRecipeNodes(json);
+            recipes.forEach(node => {
+              if (node.name && !parsedTitle) parsedTitle = String(node.name).trim();
+              if (Array.isArray(node.recipeIngredient) && node.recipeIngredient.length > parsedIngredients.length) {
+                parsedIngredients = node.recipeIngredient.map(i => String(i).replace(/\s+/g, " ").trim()).filter(Boolean);
+              }
+              if (Array.isArray(node.recipeInstructions) && parsedSteps.length === 0) {
+                const stepsOut = [];
+                const walkSteps = inst => {
+                  if (!inst) return;
+                  if (typeof inst === "string") {
+                    stepsOut.push(inst.trim());
+                  } else if (Array.isArray(inst)) {
+                    inst.forEach(walkSteps);
+                  } else if (typeof inst === "object") {
+                    if (inst.text) stepsOut.push(String(inst.text).trim());
+                    else if (inst.itemListElement) walkSteps(inst.itemListElement);
+                  }
+                };
+                walkSteps(node.recipeInstructions);
+                parsedSteps = stepsOut.filter(Boolean);
+              }
+            });
+          } catch (_) {}
+        });
+
+        if (!parsedTitle) {
+          parsedTitle = (
+            doc.querySelector('[itemprop="name"], .wprm-recipe-name, .tasty-recipes-title, h1')?.textContent ||
+            doc.querySelector('meta[property="og:title"]')?.getAttribute("content") ||
+            doc.title ||
+            ""
+          ).replace(/\s*[-|–].*$/, "").trim();
+        }
+
+        if (parsedIngredients.length === 0) {
+          const domIngs = [
+            ...doc.querySelectorAll('[itemprop="recipeIngredient"], .wprm-recipe-ingredient, .tasty-recipes-ingredients li, .mntl-structured-ingredients__list-item, .ingredients-item-name, [class*="ingredient"] li')
+          ]
+            .map(el => el.textContent.replace(/\s+/g, " ").trim())
+            .filter(t => t.length > 1 && t.length < 150);
+          if (domIngs.length > 0) parsedIngredients = [...new Set(domIngs)];
+        }
+
+        if (parsedSteps.length === 0) {
+          const domSteps = [
+            ...doc.querySelectorAll('[itemprop="recipeInstructions"] li, .wprm-recipe-instruction-text, .tasty-recipes-instructions li, .mntl-sc-block-group--LI p, [class*="instruction"] li')
+          ]
+            .map(el => el.textContent.replace(/\s+/g, " ").trim())
+            .filter(t => t.length > 8);
+          if (domSteps.length > 0) parsedSteps = [...new Set(domSteps)];
+        }
+
+        return parsedIngredients.length > 0;
+      }
+
+      async function fetchWithTimeout(targetUrl, asJson = false) {
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(), 9000);
+        try {
+          const res = await fetch(targetUrl, { signal: ctrl.signal });
+          clearTimeout(timer);
+          if (!res.ok) return "";
+          if (asJson) {
+            const data = await res.json();
+            return data?.contents || "";
+          }
+          return await res.text();
+        } catch (_) {
+          clearTimeout(timer);
+          return "";
+        }
+      }
+
+      // Proxy 1: corsproxy.io
+      let html = await fetchWithTimeout(`https://corsproxy.io/?${encodeURIComponent(url)}`, false);
+      extractFromHtmlString(html);
+
+      // Proxy 2: allorigins.win
+      if (parsedIngredients.length === 0) {
+        html = await fetchWithTimeout(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`, true);
+        extractFromHtmlString(html);
+      }
+
+      // Proxy 3: codetabs proxy
+      if (parsedIngredients.length === 0) {
+        html = await fetchWithTimeout(`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`, false);
+        extractFromHtmlString(html);
+      }
+
+      // Proxy 4: Jina Reader Markdown Extractor
+      if (parsedIngredients.length === 0) {
+        const mdText = await fetchWithTimeout(`https://r.jina.ai/${url}`, false);
+        if (mdText && mdText.length > 150) {
+          const lines = mdText.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+          if (!parsedTitle) {
+            const titleLine = lines.find(l => l.startsWith("Title:") || l.startsWith("# "));
+            if (titleLine) parsedTitle = titleLine.replace(/^(Title:\s*|#\s*)/i, "").replace(/\s*[-|–].*$/, "").trim();
+          }
+          let section = "";
+          const mdIngs = [];
+          const mdSteps = [];
+          for (const line of lines) {
+            const plainHeader = line.replace(/^[#*\s_]+|[#*\s_:]+$/g, "").toLowerCase();
+            if (/^(ingredients?|what you(?:'ll)? need|for the\b.*)$/.test(plainHeader) && plainHeader.length < 40) {
+              section = "ing";
+              continue;
+            }
+            if (/^(instructions?|directions?|method|preparation|steps?|how to make\b.*)$/.test(plainHeader) && plainHeader.length < 45) {
+              section = "step";
+              continue;
+            }
+            if (/^#{1,4}\s+/.test(line) && section) {
+              section = "";
+              continue;
+            }
+            if (section === "ing" && /^([-*•]|\d+[.)]|\[[ xX]?\])\s*/.test(line) && line.length < 140) {
+              const cleanedIng = line.replace(/^([-*•]|\d+[.)]|\[[ xX]?\])\s*/g, "").trim();
+              if (cleanedIng && !/^https?:\/\//i.test(cleanedIng)) mdIngs.push(cleanedIng);
+            } else if (section === "step" && /^(\d+[.)]|[-*•])\s+/.test(line) && line.length > 10) {
+              mdSteps.push(line.replace(/^(\d+[.)]|[-*•])\s+/, "").trim());
+            }
+          }
+          if (mdIngs.length > 0) parsedIngredients = mdIngs;
+          if (mdSteps.length > 0 && parsedSteps.length === 0) parsedSteps = mdSteps;
+        }
+      }
+
+      const combinedHint = `${parsedTitle} ${url}`.toLowerCase();
+      if (/air[\s-]?fryer/i.test(combinedHint)) detectedMethod = "Air Fryer";
+      else if (/\b(baked|oven|roast|casserole)\b/i.test(combinedHint)) detectedMethod = "Baked";
+      else if (/\b(dessert|cookie|crisp|kheer|cake|pudding|brownie|sweet)\b/i.test(combinedHint)) detectedMethod = "Dessert";
+
+      const cuisineMap = [
+        ["Indian", /\b(indian|dosa|paneer|masala|dal|chana|aloo|gobi|idli|uttapam|biryani|tikka|curry)\b/i],
+        ["Italian", /\b(italian|pasta|spaghetti|risotto|lasagna|pesto|aglio|gnocchi|parmigiana)\b/i],
+        ["Mexican", /\b(mexican|taco|quesadilla|enchilada|burrito|fajita|salsa)\b/i],
+        ["Chinese", /\b(chinese|fried rice|chow mein|kung pao|schezwan|manchurian|wok)\b/i],
+        ["Mediterranean", /\b(mediterranean|greek|hummus|falafel|tzatziki|feta)\b/i],
+        ["Thai", /\b(thai|pad thai|green curry|red curry|basil noodles)\b/i],
+        ["Japanese", /\b(japanese|teriyaki|donburi|ramen|miso|katsu)\b/i],
+        ["Korean", /\b(korean|bibimbap|kimchi|gochujang|bulgogi)\b/i],
+        ["Middle Eastern", /\b(middle eastern|shakshuka|shawarma|za'?atar|tahini)\b/i]
+      ];
+      for (const [cName, regex] of cuisineMap) {
+        if (regex.test(combinedHint)) {
+          detectedCuisine = cName;
+          break;
+        }
+      }
+
+      if (parsedTitle) document.getElementById("customTitleInput").value = parsedTitle;
+      if (detectedCuisine) document.getElementById("customCuisineInput").value = detectedCuisine;
+      if (detectedMethod) document.getElementById("customMethodInput").value = detectedMethod;
+
+      if (parsedIngredients.length > 0) {
+        document.getElementById("customIngredientsInput").value = parsedIngredients.join(", ");
+        updateLiveCustomIngredientCheck();
+        statusEl.textContent = `✅ Extracted ${parsedIngredients.length} ingredients${parsedSteps.length ? ` & ${parsedSteps.length} steps` : ""}! Review below and click Save.`;
+      } else {
+        const slugTitle = url
+          .replace(/\/+$/, "")
+          .split("/")
+          .pop()
+          ?.replace(/\.[a-z]+$/i, "")
+          .replace(/[-_]+/g, " ")
+          .replace(/\b\w/g, c => c.toUpperCase()) || "Imported Recipe";
+        if (!parsedTitle) document.getElementById("customTitleInput").value = slugTitle;
+        statusEl.textContent = "ℹ️ Could not auto-read ingredients from this URL—title filled in; paste ingredients below to check your kitchen!";
+      }
+
+      if (parsedSteps.length > 0) {
+        document.getElementById("customStepsInput").value = parsedSteps.join("\n");
+      }
+    }
+
+    function updateLiveCustomIngredientCheck() {
+      const box = document.getElementById("liveCustomKitchenCheck");
+      const raw = document.getElementById("customIngredientsInput")?.value || "";
+      if (!box) return;
+
+      const items = raw.split(/[,\n]/).map(normalizeIngredientName).filter(i => i && !isBasicUniversalItem(i));
+      if (items.length === 0) {
+        box.innerHTML = "";
+        return;
+      }
+
+      const have = [];
+      const need = [];
+      items.forEach(ing => {
+        const found = state.pantry.some(p => p.name.toLowerCase() === ing.toLowerCase());
+        if (found) have.push(ing);
+        else need.push(ing);
+      });
+
+      box.innerHTML = `
+        <span class="font-bold text-[#3A7D5C]">✓ In your kitchen (${have.length}): ${have.join(", ") || "None yet"}</span>
+        ${need.length ? `<span class="block text-amber-800 font-semibold mt-0.5">+ Need to buy (${need.length}): ${need.join(", ")}</span>` : ""}
+      `;
+    }
+
+    function copyTextFallback(text) {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        document.execCommand("copy");
+      } catch (_) {}
+      document.body.removeChild(ta);
+    }
+
+    let toastTimer = null;
+    function showToast(msg) {
+      const el = document.getElementById("toastBanner");
+      if (!el) return;
+      el.textContent = msg;
+      el.classList.remove("hidden");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => el.classList.add("hidden"), 3200);
+    }
+
+    function renderAll() {
+      renderShelf();
+      renderFilters();
+      renderRecipes();
+      renderPlanner();
+      renderSavingsFooter();
+    }
+
+    // =========================================================================
+    // 9. DOMContentLoaded INITIALIZATION & EVENT WIRING
+    // =========================================================================
+    document.addEventListener("DOMContentLoaded", () => {
+      loadState();
+      renderAll();
+      setupVoiceInput();
+
+      document.getElementById("manualIngredientForm")?.addEventListener("submit", e => {
+        e.preventDefault();
+        if (isListeningVoice) {
+          stopVoiceListening(true);
+          return;
+        }
+        const input = document.getElementById("ingredientInput");
+        const val = input?.value.trim();
+        if (!val) return;
+        const items = val.split(/[,\n]+/).map(s => s.trim()).filter(Boolean);
+        const count = addIngredientsToKitchen(items, 4);
+        if (input) input.value = "";
+        if (count > 0) showToast(`Added ${count} item${count > 1 ? "s" : ""} to your kitchen!`);
+      });
+
+      document.getElementById("clearPantryBtn")?.addEventListener("click", () => {
+        state.pantry = [];
+        state.showAllShelf = false;
+        state.visibleRecipeLimit = 6;
+        saveState();
+        renderAll();
+        showToast("Kitchen list cleared.");
+      });
+
+      document.getElementById("toggleShelfExpandBtn")?.addEventListener("click", () => {
+        state.showAllShelf = !state.showAllShelf;
+        saveState();
+        renderShelf();
+      });
+
+      document.getElementById("commonStaplesBtn")?.addEventListener("click", openStaplesModal);
+      document.getElementById("closeStaplesModalBtn")?.addEventListener("click", closeStaplesModal);
+
+      document.getElementById("addCustomStapleForm")?.addEventListener("submit", e => {
+        e.preventDefault();
+        const input = document.getElementById("customStapleInput");
+        const clean = normalizeIngredientName(input?.value || "");
+        if (!clean) return;
+        if (!state.stapleOptions.some(s => s.toLowerCase() === clean.toLowerCase())) {
+          state.stapleOptions.push(clean);
+        }
+        if (!state.selectedStaples.includes(clean)) {
+          state.selectedStaples.push(clean);
+        }
+        if (input) input.value = "";
+        saveState();
+        renderStaplesChecklist();
+      });
+
+      document.getElementById("selectAllStaplesBtn")?.addEventListener("click", () => {
+        state.selectedStaples = [...state.stapleOptions];
+        saveState();
+        renderStaplesChecklist();
+      });
+
+      document.getElementById("clearStapleSelectionBtn")?.addEventListener("click", () => {
+        state.selectedStaples = [];
+        saveState();
+        renderStaplesChecklist();
+      });
+
+      document.getElementById("applySelectedStaplesBtn")?.addEventListener("click", () => {
+        if (state.selectedStaples.length === 0) {
+          showToast("Check at least one staple item first.");
+          return;
+        }
+        const count = addIngredientsToKitchen(state.selectedStaples, 4);
+        closeStaplesModal();
+        showToast(`Added ${count} selected staple${count > 1 ? "s" : ""} to your kitchen!`);
+      });
+
+      document.getElementById("scanReceiptBtn")?.addEventListener("click", () => {
+        document.getElementById("receiptFileInput")?.click();
+      });
+      document.getElementById("receiptFileInput")?.addEventListener("change", e => {
+        const file = e.target.files?.[0];
+        if (file) processReceiptFile(file);
+        e.target.value = "";
+      });
+
+      document.getElementById("strictMatchToggle")?.addEventListener("change", e => {
+        state.strictMatch = e.target.checked;
+        state.visibleRecipeLimit = 6;
+        saveState();
+        renderAll();
+      });
+
+      document.getElementById("assumeCuisineSpicesToggle")?.addEventListener("change", e => {
+        state.assumeCuisineSpices = e.target.checked;
+        saveState();
+        renderAll();
+      });
+
+      document.querySelectorAll(".serving-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          state.servings = Number(btn.dataset.servings);
+          saveState();
+          renderAll();
+        });
+      });
+
+      document.getElementById("recipeSearchInput")?.addEventListener("input", e => {
+        state.searchQuery = e.target.value;
+        state.visibleRecipeLimit = 6;
+        renderRecipes();
+      });
+
+      document.getElementById("recipeSortSelect")?.addEventListener("change", e => {
+        state.sortBy = e.target.value;
+        state.visibleRecipeLimit = 6;
+        renderRecipes();
+      });
+
+      document.getElementById("loadMoreRecipesBtn")?.addEventListener("click", () => {
+        state.visibleRecipeLimit = (state.visibleRecipeLimit || 6) + 10;
+        renderRecipes();
+      });
+
+      document.getElementById("resetRecipesLimitBtn")?.addEventListener("click", () => {
+        state.visibleRecipeLimit = 6;
+        renderRecipes();
+      });
+
+      document.getElementById("autoFillWeekBtn")?.addEventListener("click", autoFillWeeklyPlan);
+      document.getElementById("clearWeekBtn")?.addEventListener("click", () => {
+        state.weeklyPlan = {};
+        saveState();
+        renderAll();
+        showToast("Weekly meal plan cleared.");
+      });
+
+      document.getElementById("copyGroceryListBtn")?.addEventListener("click", () => {
+        const items = [...document.querySelectorAll(".grocery-item-cb")].map(cb => `- ${cb.value}`);
+        if (items.length === 0) {
+          showToast("No missing grocery items to copy!");
+          return;
+        }
+        copyTextFallback("Pantry2Plate Weekly Grocery List:\n" + items.join("\n"));
+        showToast("📋 Grocery list copied to clipboard!");
+      });
+
+      document.getElementById("moveBoughtToKitchenBtn")?.addEventListener("click", () => {
+        if (state.checkedGroceryItems.length === 0) {
+          showToast("Check off the grocery items you bought first.");
+          return;
+        }
+        const bought = [...state.checkedGroceryItems];
+        state.checkedGroceryItems = [];
+        addIngredientsToKitchen(bought, 4);
+        showToast(`🛒 Moved ${bought.length} bought item${bought.length > 1 ? "s" : ""} into your kitchen!`);
+      });
+
+      const customModal = document.getElementById("customRecipeModal");
+      document.getElementById("openCustomRecipeBtn")?.addEventListener("click", () => {
+        customModal?.classList.remove("hidden");
+      });
+      document.getElementById("closeCustomRecipeBtn")?.addEventListener("click", () => {
+        customModal?.classList.add("hidden");
+      });
+      document.getElementById("cancelCustomRecipeBtn")?.addEventListener("click", () => {
+        customModal?.classList.add("hidden");
+      });
+
+      document.getElementById("parseUrlBtn")?.addEventListener("click", parseRecipeFromUrl);
+      document.getElementById("customIngredientsInput")?.addEventListener("input", updateLiveCustomIngredientCheck);
+
+      document.getElementById("customRecipeForm")?.addEventListener("submit", e => {
+        e.preventDefault();
+        const title = document.getElementById("customTitleInput")?.value.trim();
+        const cuisine = document.getElementById("customCuisineInput")?.value || "Indian";
+        const method = document.getElementById("customMethodInput")?.value || "Stovetop";
+        const prepTime = Number(document.getElementById("customTimeInput")?.value) || 20;
+        const diet = document.getElementById("customDietInput")?.value || "Vegetarian";
+        const rawIngs = document.getElementById("customIngredientsInput")?.value || "";
+        const videoUrl = document.getElementById("customVideoUrlInput")?.value.trim() || "";
+        const rawSteps = document.getElementById("customStepsInput")?.value || "";
+
+        const ingredients = rawIngs.split(/[,\n]+/).map(normalizeIngredientName).filter(Boolean);
+        const steps = rawSteps.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+
+        if (!title || ingredients.length === 0) return;
+
+        const newRecipe = {
+          id: `custom_${Date.now()}`,
+          title,
+          cuisine,
+          method,
+          prepTime,
+          diet,
+          diets: [diet],
+          calories: 360,
+          protein: 14,
+          ingredients,
+          videoUrl: videoUrl || null,
+          swaps: {},
+          steps: steps.length ? steps : ["Prepare ingredients and cook until tender and flavorful."]
+        };
+
+        state.customRecipes.unshift(newRecipe);
+        trackCuisineAffinity(cuisine, 3);
+        saveState();
+        renderAll();
+        e.target.reset();
+        document.getElementById("liveCustomKitchenCheck").innerHTML = "";
+        customModal?.classList.add("hidden");
+        showToast(`Saved "${title}" to your recipes!`);
+      });
+    });
+  </script>
+</body>
+</html>
